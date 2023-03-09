@@ -6,8 +6,8 @@
 * [Installation](https://github.com/Bren828/easy-barrier#installation)
 * [Example](https://github.com/Bren828/easy-barrier#example)
 * [Functions](https://github.com/Bren828/easy-barrier#functions)
-* [Barrier statuses]([https://github.com/Bren828/](https://github.com/Bren828/easy-barrier#barrier-statuses))
-* [Definition]([https://github.com/Bren828/](https://github.com/Bren828/easy-barrier#definition))
+* [Barrier statuses](https://github.com/Bren828/easy-barrier#barrier-statuses)
+* [Definition](https://github.com/Bren828/easy-barrier#definition)
 
 ## Download
 [Releases page](https://github.com/Bren828/easy-barrier/releases)
