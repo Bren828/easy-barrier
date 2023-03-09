@@ -1,3 +1,5 @@
+Language: **English** or [Russian](https://github.com/Bren828/easy-barrier/blob/main/README.md)
+
 # easy-barrier 
 Упрощенное создание движущихся объектов, таких как ворота, двери и шлагбаумы. С возвращением на прошлое положение через определенное время.
 
