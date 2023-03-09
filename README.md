@@ -2,12 +2,12 @@
 Упрощенное создание движущихся объектов, таких как ворота, двери и шлагбаумы. С возвращением на прошлое положение через определенное время.
 
 ## Reference
-* [Download](https://github.com/Bren828/HitMarker-SA-MP/)
-* [Installation](https://github.com/Bren828/HitMarker-SA-MP/)
-* [Example](https://github.com/Bren828/HitMarker-SA-MP/)
-* [Functions](https://github.com/Bren828/HitMarker-SA-MP/)
-* [Barrier statuses](https://github.com/Bren828/)
-* [Definition](https://github.com/Bren828/)
+* [Download](https://github.com/Bren828/easy-barrier#download)
+* [Installation](https://github.com/Bren828/easy-barrier#installation)
+* [Example](https://github.com/Bren828/easy-barrier#example)
+* [Functions](https://github.com/Bren828/easy-barrier#functions)
+* [Barrier statuses]([https://github.com/Bren828/](https://github.com/Bren828/easy-barrier#barrier-statuses))
+* [Definition]([https://github.com/Bren828/](https://github.com/Bren828/easy-barrier#definition))
 
 ## Download
 [Releases page](https://github.com/Bren828/easy-barrier/releases)
