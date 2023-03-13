@@ -34,7 +34,6 @@ PickupResponse:Police_Department(playerid, barrierid)
         SendClientMessage(playerid, 0xFF0000AA, "Only for cops");
         retrun 1;
     }
-    if(IsBarrierOpen(barrierid)) return 1; // if the barrier was open
 
     SendClientMessage(playerid, -1, "barrier for police open");
     return 0;
