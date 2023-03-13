@@ -208,6 +208,29 @@ PickupResponse:Police_Department(playerid, barrierid)
 > * Вернет: -1 при неудачи (BARRIER_INVALID)
 > * Вернет: статус барьера
 
+#### GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
+> Узнать идентификатор объекта барьера
+> * `barrierid` - ID барьера
+> * `&moveid` - Вернет id движущегося объекта
+> * `&extraid` - Вернет id дополнительного объекта
+> * Вернет: -1 при неудачи (BARRIER_INVALID)
+> * Вернет: 1 при успехе
+
+#### BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
+> Создать статичный дополнительный объект
+> * `barrierid` - ID барьера
+> * `object_model` - The model
+> * `Float:x` - Координата x
+> * `Float:y` - Координата y
+> * `Float:z` - Координата z
+> * `Float:rx` - Координата x вращение объекта
+> * `Float:ry` - Координата y вращение объекта
+> * `Float:rz` - Координата z вращение объекта
+> * `worldid` - ID виртуального мира
+> * `interiorid` - ID интерьера 
+> * Вернет:-1 при неудачи (BARRIER_INVALID)
+> * Вернет:1 при успехе
+
 ## Barrier statuses
 ```pawn
 BARRIER_STATE_PLAYER_AND_DRIVER = -1 // доступен для игроков и транспорта
@@ -218,6 +241,8 @@ BARRIER_STATE_PLAYER_ONLY = 1 // доступен только для игрок
 ## Definition
 ```pawn
 #define MAX_BARRIERS                200
+
+#define BARRIER_MAX_FUNCTION_NAME   30
 
 #define BARRIER_KEY_STATE_ONFOOT    KEY_WALK // кнопка взаимодействия с барьером на ногах
 
