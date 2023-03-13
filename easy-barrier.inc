@@ -5,9 +5,9 @@
 *   ---------------------------------------------------
 *
 *	Creater - @Bren828	
-*									25 January 2023
+*									10 March 2023
 *
-*   Version: 1.0
+*   Version: 1.01
 *
 *   ---------------------------------------------------
 *
@@ -17,7 +17,7 @@
 *
 *
 * Создать барьер
-*		BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = BARRIER_3DTEXT_TEXT, color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0);
+*		BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = BARRIER_3DTEXT_TEXT, color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
 *		* function[]: Название функции
 *		* Float:zone_size: Размер зоны срабатывания
 *		* Float:move_speed: Скорость движения объекта
@@ -221,6 +221,33 @@
 *       * Вернет: статус барьера
 *
 *
+* Узнать идентификатор объекта барьера
+*       GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
+*       * barrierid: ID барьера
+*       * &moveid: Вернет id движущегося объекта
+*       * &extraid: Вернет id дополнительного объекта
+*
+*		* Вернет: -1 при неудачи (BARRIER_INVALID)
+*       * Вернет: 1 при успехе
+*
+*
+* Создать статичный дополнительный объект
+*       BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
+*       * barrierid: ID барьера
+*       * object_model: The model
+*       * Float:x: Координата x
+*       * Float:y: Координата y
+*       * Float:z: Координата z
+*       * Float:rx: Координата x вращение объекта
+*       * Float:ry: Координата y вращение объекта
+*       * Float:rz: Координата z вращение объекта
+*       * worldid: ID виртуального мира
+*       * interiorid: ID интерьера 
+*
+*		* Вернет: -1 при неудачи (BARRIER_INVALID)
+*       * Вернет: 1 при успехе
+*
+*
 * 		/////////////
 *			Usage
 * 		/////////////
@@ -233,14 +260,13 @@
 *       SetBarrierState(GetBarrierSlotID("Police_Department"), BARRIER_STATE_PLAYER_ONLY); // change status only for players
 *
 *
-*		PickupResponse:Police_Department(playerid, barrierid)
+*		BarrierResponse:Police_Department(playerid, barrierid)
 *		{
 *		    if(GetPlayerSkin(playerid) != 283) 
 *           {
 *               SendClientMessage(playerid, 0xFF0000AA, "Only for cops");
 *               retrun 1;
 *           }
-*           if(IsBarrierOpen(barrierid)) return 1; // if the barrier was open
 *
 *			SendClientMessage(playerid, -1, "barrier for police open");
 *			return 0;
@@ -259,7 +285,7 @@
 *       SetBarrierTrigger(barrier_door, 23.1590,6.3259,3.1172); // change trigger position
 *
 *
-*		PickupResponse:Door_House(playerid, barrierid)
+*		BarrierResponse:Door_House(playerid, barrierid)
 *		{
 *		    if(GetPlayerScore(playerid) <= 10) 
 *           {
@@ -284,6 +310,10 @@
     #define MAX_BARRIERS                200
 #endif
 
+#if !defined BARRIER_MAX_FUNCTION_NAME
+	#define BARRIER_MAX_FUNCTION_NAME   30
+#endif
+
 #if !defined BARRIER_KEY_STATE_ONFOOT
     #define BARRIER_KEY_STATE_ONFOOT    KEY_WALK // кнопка взаимодействия с барьером на ногах
 #endif
@@ -297,7 +327,7 @@
 #endif
 
 #if !defined BARRIER_3DTEXT_DISTANCE
-	#define BARRIER_3DTEXT_DISTANCE     18.0 // дистанция открытия
+	#define BARRIER_3DTEXT_DISTANCE     18.0 // дистанция 3d текста
 #endif
 
 #if !defined BARRIER_3DTEXT_LENGTH
@@ -308,9 +338,9 @@
 	#define BARRIER_OBJECT_DISTANCE    	200.0 // дистанция прорисовки барьера
 #endif
 
-#define BarrierResponse:%0(%1) forward _b%0(%1); public _b%0(%1)
+#define BarrierResponse:%0(%1) forward %0(%1); public %0(%1)
 
-enum 
+enum
 {
     BARRIER_INVALID = -1,
     BARRIER_STATE_PLAYER_AND_DRIVER = -1,
@@ -321,9 +351,9 @@ enum
 enum barrier_gates_EN
 {
     bool:bg_Create,
-    bg_Function[32],
+    bg_Function[BARRIER_MAX_FUNCTION_NAME],
     Float:bg_ZoneSize,
-    bg_ObjectModel, bg_MoveObject, bg_OtherObject,
+    bg_MoveObject, bg_ExtraObject,
     Float:bg_Object_x,
     Float:bg_Object_y,
     Float:bg_Object_z,
@@ -358,7 +388,7 @@ static bool:barrier_gates_Timer = false;
 
 stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = BARRIER_3DTEXT_TEXT, color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
 {
-    if(strlen(function) <= 0 || strlen(function) >= 30) return printf("easy-barrier --->>> | BarrierCreate | error, while creating '%s' | wrong name length (length from 1 to 30)", function) & -1;
+    if(strlen(function) <= 0 || strlen(function) >= BARRIER_MAX_FUNCTION_NAME) return printf("easy-barrier --->>> | BarrierCreate | error, while creating '%s' | wrong name length (length from 1 to %d)", function, BARRIER_MAX_FUNCTION_NAME) & -1;
 	new slot = -1;
 	for(new i; i < MAX_BARRIERS; i ++)
 	{
@@ -369,9 +399,8 @@ stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing
 	if(slot == -1) return printf("easy-barrier --->>> | BarrierCreate | not all barriers were created! | increase the value '#define MAX_BARRIERS'") & -1;
 
     barrier_gates[slot][bg_Create] = true;
-    format(barrier_gates[slot][bg_Function], 32, "_b%s", function);
+    format(barrier_gates[slot][bg_Function], BARRIER_MAX_FUNCTION_NAME, function);
     barrier_gates[slot][bg_ZoneSize] = zone_size;
-    barrier_gates[slot][bg_ObjectModel] = object_model;
     barrier_gates[slot][bg_Object_x] = x;
     barrier_gates[slot][bg_Object_y] = y;
     barrier_gates[slot][bg_Object_z] = z;
@@ -401,20 +430,20 @@ stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing
     {
         case 968:
         {
-            xoff = -3.6;
             barrier_gates[slot][bg_MoveObject_ry] = ry - ((ry*95)/100);
-            barrier_gates[slot][bg_OtherObject] = CreateDynamicObject(966, x, y, z-0.8,  rx, 0.0, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
+            barrier_gates[slot][bg_ExtraObject] = CreateDynamicObject(966, x, y, z-0.8,  rx, 0.0, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
             barrier_gates[slot][bg_MoveObject] = CreateDynamicObject(object_model, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
+            
+            xoff = -3.6;
+            rz = 360 - rz;
+            x = (floatsin(rz, degrees) * yoff + floatcos(rz, degrees) * xoff + x);
+            y = (floatcos(rz, degrees) * yoff - floatsin(rz, degrees) * xoff + y);
         }
         default:
         {
             barrier_gates[slot][bg_MoveObject] = CreateDynamicObject(object_model, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
         }
     }
-
-    rz = 360 - rz;
-    x = (floatsin(rz, degrees) * yoff + floatcos(rz, degrees) * xoff + x);
-    y = (floatcos(rz, degrees) * yoff - floatsin(rz, degrees) * xoff + y);
 
 	if(strlen(text3D) >= 1) barrier_gates[slot][bg_Text3D] = CreateDynamic3DTextLabel(text3D, color, x, y, z+0.5, text3D_distance, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, worldid, interiorid, -1, text3D_distance);
     barrier_gates[slot][bg_trigger_x] = (trigger_x == 0.0) ? (x):(trigger_x);
@@ -584,41 +613,38 @@ stock BarrierDelete(barrierid)
     if(barrier_gates[barrierid][bg_Create] == false) return -1;
 
     if(IsValidDynamicObject(barrier_gates[barrierid][bg_MoveObject])) DestroyDynamicObject(barrier_gates[barrierid][bg_MoveObject]);
-    if(IsValidDynamicObject(barrier_gates[barrierid][bg_OtherObject])) DestroyDynamicObject(barrier_gates[barrierid][bg_OtherObject]);
+    if(IsValidDynamicObject(barrier_gates[barrierid][bg_ExtraObject])) DestroyDynamicObject(barrier_gates[barrierid][bg_ExtraObject]);
     if(barrier_gates[barrierid][bg_Text3D] != Text3D:INVALID_3DTEXT_ID) DestroyDynamic3DTextLabel(barrier_gates[barrierid][bg_Text3D]);
 
     barrier_gates[barrierid][bg_Create] = false;
     barrier_gates[barrierid][bg_Function][0] = '\0';
     barrier_gates[barrierid][bg_MoveObject] = 0;
-    barrier_gates[barrierid][bg_OtherObject] = 0;
+    barrier_gates[barrierid][bg_ExtraObject] = 0;
     barrier_gates[barrierid][bg_Text3D] = Text3D:INVALID_3DTEXT_ID;
     return barrierid;
 }
 
 stock GetBarrierSlotID(const function[])
 {
-	if(strlen(function) <= 0 || strlen(function) >= 30) return printf("easy-barrier --->>> | GetBarrierSlotID | error, in function name '%s' | wrong name length (length from 1 to 30)", function) & -1;
-	new _function[33] = "_b", slot = -1;
-	strcat(_function, function);
+	if(strlen(function) <= 0 || strlen(function) >= BARRIER_MAX_FUNCTION_NAME) return printf("easy-barrier --->>> | GetBarrierSlotID | error, in function name '%s' | wrong name length (length from 1 to 30)", function) & -1;
+	new slot = -1;
 	for(new x; x < MAX_BARRIERS; x ++)
 	{
 		if(barrier_gates[x][bg_Create] == false) continue;
-		if(strcmp(_function, barrier_gates[x][bg_Function], false)) continue;
+		if(strcmp(function, barrier_gates[x][bg_Function], false)) continue;
 		slot = x;
 		break;
 	}
 	return slot;
 }
 
-stock BarrierCreateOtherObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
+stock BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
 {
-    //if(barrierid == -1) barrierid = GetBarrierSlotID(function);
-	//if(barrierid == -1 && (strlen(function) <= 0 || strlen(function) >= 30)) return printf("easy-barrier --->>> | BarrierCreateOtherObject | error, in function name '%s' | wrong name length (length from 1 to 30)", function) & -1;
     if(barrierid < 0 || barrierid >= MAX_BARRIERS) return printf("easy-barrier --->>> | BarrierCreateOtherObject | error, invalid barrierid '%d'", barrierid) & -1;
     if(barrier_gates[barrierid][bg_Create] == false) return -1;
 
-    if(IsValidDynamicObject(barrier_gates[barrierid][bg_OtherObject])) DestroyDynamicObject(barrier_gates[barrierid][bg_OtherObject]);
-    barrier_gates[barrierid][bg_OtherObject] = CreateDynamicObject(object_model, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
+    if(IsValidDynamicObject(barrier_gates[barrierid][bg_ExtraObject])) DestroyDynamicObject(barrier_gates[barrierid][bg_ExtraObject]);
+    barrier_gates[barrierid][bg_ExtraObject] = CreateDynamicObject(object_model, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
     return 1;
 }
 
@@ -640,6 +666,16 @@ stock GetBarrierState(barrierid)
     return barrier_gates[barrierid][bg_BarrierState];
 }
 
+stock GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
+{
+    if(barrierid < 0 || barrierid >= MAX_BARRIERS) return printf("easy-barrier --->>> | GetBarrierObjectID | error, invalid barrierid '%d'", barrierid) & -1;
+    if(barrier_gates[barrierid][bg_Create] == false) return -1;
+
+    moveid = barrier_gates[barrierid][bg_MoveObject];
+    extraid = barrier_gates[barrierid][bg_ExtraObject];
+    return 1;
+}
+
 #if defined _inc_y_hooks || defined _INC_y_hooks
 	hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 #else
@@ -654,6 +690,7 @@ stock GetBarrierState(barrierid)
             if(!IsPlayerInRangeOfPoint(playerid, barrier_gates[x][bg_ZoneSize], barrier_gates[x][bg_trigger_x], barrier_gates[x][bg_trigger_y], barrier_gates[x][bg_trigger_z])) continue;
             if(barrier_gates[x][bg_Worldid] != -1 && GetPlayerVirtualWorld(playerid) != barrier_gates[x][bg_Worldid] || barrier_gates[x][bg_Interiorid] != -1 && GetPlayerInterior(playerid) != barrier_gates[x][bg_Interiorid]) break; 
             if(barrier_gates[x][bg_BarrierState] != BARRIER_STATE_PLAYER_AND_DRIVER && barrier_gates[x][bg_BarrierState] != GetPlayerState(playerid)) break;
+            if(barrier_gates[x][bg_ClosingTimeStatic] != 0 && barrier_gates[x][bg_Open] == true) break;
 
 			new check = CallLocalFunction(barrier_gates[x][bg_Function], "dd", playerid, x); // BarrierResponse
             if(check == 0)
@@ -664,7 +701,7 @@ stock GetBarrierState(barrierid)
                     else BarrierClose(x);
                     break;
                 }
-                else if(barrier_gates[x][bg_ClosingTime] == 0) BarrierOpen(x);
+                BarrierOpen(x);
                 barrier_gates[x][bg_ClosingTime] = barrier_gates[x][bg_ClosingTimeStatic];
             }
 			break;
