@@ -180,22 +180,19 @@ PickupResponse:Police_Department(playerid, barrierid)
 > Изменить статус барьера
 > * `barrierid` - ID барьера
 > * `barrier_state` - Статус барьера
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierState(barrierid)
 > Узнать статус барьера
 > * `barrierid` - ID барьера
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: статус барьера
+> * Вернет -1 при неудачи (BARRIER_INVALID) или статус барьера
 
 #### GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
 > Узнать идентификатор объекта барьера
 > * `barrierid` - ID барьера
 > * `&moveid` - Вернет id движущегося объекта
 > * `&extraid` - Вернет id дополнительного объекта
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
 > Создать статичный дополнительный объект
@@ -209,8 +206,7 @@ PickupResponse:Police_Department(playerid, barrierid)
 > * `Float:rz` - Координата z вращение объекта
 > * `worldid` - ID виртуального мира
 > * `interiorid` - ID интерьера 
-> * Вернет:-1 при неудачи (BARRIER_INVALID)
-> * Вернет:1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 ## Barrier statuses
 ```pawn
