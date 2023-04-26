@@ -64,8 +64,7 @@ PickupResponse:Police_Department(playerid, barrierid)
 > * `Float:trigger_x` - Координата x зоны срабатывания
 > * `Float:trigger_y` - Координата y зоны срабатывания 
 > * `Float:trigger_z` - Координата z зоны срабатывания
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: ID барьера при успехе
+> * Вернет (-1) при неудачи (BARRIER_INVALID) или (ID) барьера при успехе
 
 #### BarrierResponse:const function[](playerid, barrierid)
 > Обратный вызов
@@ -76,27 +75,22 @@ PickupResponse:Police_Department(playerid, barrierid)
 #### BarrierDelete(barrierid)
 > Удалить барьер
 > * `barrierid` - ID барьера
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: ID барьера при успехе
+> * Вернет (-1) при неудачи (BARRIER_INVALID) или (ID) барьера при успехе
 
 #### BarrierOpen(barrierid)
 > Открыть барьер
 > * `barrierid` - ID барьера
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### BarrierClose(barrierid)
 > Закрыть барьер
 > * `barrierid` - ID барьера
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### IsBarrierOpen(barrierid)
 > Узнать состояние барьера
 > * `barrierid` - ID барьера
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 (true)  если барьер открыт
-> * Вернет: 0 (false) если барьер закрыт
+> * Вернет 0 (false) если барьер закрыт или 1 (true) если барьер открыт или (-1) при неудачи (BARRIER_INVALID)
 
 #### SetBarrierMove(barrierid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
 > Изменить положения движущегося объекта
@@ -107,31 +101,27 @@ PickupResponse:Police_Department(playerid, barrierid)
 > * `Float:rx` - Координата x вращение объекта
 > * `Float:ry` - Координата y вращение объекта
 > * `Float:rz` - Координата z вращение объекта
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### SetBarrierText(barrierid, const text[], color)
 > Изменить 3D текст
 > * `barrierid` - ID барьера
 > * `text[]` - Текст
 > * `color` - Цвет
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierText(barrierid, text[], size = sizeof(text))
 > Узнать текста 3D текста
 > * `barrierid` - ID барьера
 > * `&text` - Текст
 > * `size = sizeof(text)` - sizeof
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierTextColor(barrierid, &color)
 > Узнать цвет 3D текста
 > * `barrierid` - ID барьера
 > * `&color` - Цвет
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### SetBarrierTextPosition(barrierid, Float:x, Float:y, Float:z)
 > Изменить положение 3D текста
@@ -139,35 +129,30 @@ PickupResponse:Police_Department(playerid, barrierid)
 > * `Float:x` - Координата x
 > * `Float:y` - Координата y
 > * `Float:z` - Координата z
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### SetBarrierSecondsClose(barrierid, seconds)
 > Изменить время закрытия барьера
 > * `barrierid` - ID барьера
 > * `seconds[]` - Секунды (используйте значение 0, для ручного открытия/закрытия)
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierSecondsCloses(barrierid)
 > Узнать время закрытия барьера
 > * `barrierid` - ID барьера
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: Количество секунд
+> * Вернет -1 при неудачи (BARRIER_INVALID) или количество секунд
 
 #### SetBarrierMoveSpeed(barrierid, Float:speed)
 > Изменить скорость движущегося объекта
 > * `barrierid` - ID барьера
 > * `Float:speed` - Скорость движения
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierMoveSpeed(barrierid, &Float:speed)
 > Узнать скорость движущегося объекта
 > * `barrierid` - ID барьера
 > * `&Float:speed` - Скорость движения
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### SetBarrierTrigger(barrierid, Float:x, Float:y, Float:z)
 > Изменить зону срабатывания
@@ -175,8 +160,7 @@ PickupResponse:Police_Department(playerid, barrierid)
 > * `Float:x` - Координата x зоны срабатывания
 > * `Float:y` - Координата y зоны срабатывания
 > * `Float:z` - Координата z зоны срабатывания
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierTrigger(barrierid, &Float:x, &Float:y, &Float:z)
 > Узнать зону срабатывания
@@ -184,14 +168,12 @@ PickupResponse:Police_Department(playerid, barrierid)
 > * `&Float:x` - Координата x зоны срабатывания
 > * `&Float:y` - Координата y зоны срабатывания
 > * `&Float:z` - Координата z зоны срабатывания
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: 1 при успехе
+> * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierSlotID(const function[])
 > Узнать ID барьера
 > * `function[]` - Название функции
-> * Вернет: -1 при неудачи (BARRIER_INVALID)
-> * Вернет: ID барьера при успехе
+> * Вернет (-1) при неудачи (BARRIER_INVALID) или (ID) барьера при успехе
 > * ПРИМЕЧАНИЕ: При использовании одинаковых названий 'function[]' вернет ближайший ID барьера!
 
 #### SetBarrierState(barrierid, barrier_state)
