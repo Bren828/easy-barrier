@@ -43,176 +43,176 @@ PickupResponse:Police_Department(playerid, barrierid)
 ## Functions
 
 #### BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = BARRIER_3DTEXT_TEXT, color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
-> Создать барьер
-> * `function[]` - Название функции
-> * `Float:zone_size` - Размер зоны срабатывания
-> * `Float:move_speed` - Скорость движения объекта
-> * `closing_seconds` - Время закрытия (используйте значение 0, для ручного открытия/закрытия)
+> Create a barrier
+> * `function[]` - Function name
+> * `Float:zone_size` - Trigger distance
+> * `Float:move_speed` - The speed at which to move the object (units per second)
+> * `closing_seconds` - Closing time (use the value 0, for manual opening/closing)
 > * `object_model` - The model
-> * `Float:x` - Координата x
-> * `Float:y` - Координата y
-> * `Float:z` - Координата z
-> * `Float:rx` - Координата x вращение объекта
-> * `Float:ry` - Координата y вращение объекта
-> * `Float:rz` - Координата z вращение объекта
-> * `worldid` - ID виртуального мира
-> * `interiorid` - ID интерьера 
-> * `barrier_state` - Состояние барьера
+> * `Float:x` - The x coordinate to create the object
+> * `Float:y` - The y coordinate to create the object
+> * `Float:z` - The z coordinate to create the object
+> * `Float:rx` - The x rotation of the object
+> * `Float:ry` - The y rotation of the object
+> * `Float:rz` - The z rotation of the object
+> * `worldid` - The virtual world ID
+> * `interiorid` - The interior ID
+> * `barrier_state` - Barrier status
 > * `text3D[]` - 3DText
-> * `color` - Цвет 3DText 
-> * `Float:text3D_distance` - Дистанция отображения 3DText
-> * `Float:trigger_x` - Координата x зоны срабатывания
-> * `Float:trigger_y` - Координата y зоны срабатывания 
-> * `Float:trigger_z` - Координата z зоны срабатывания
+> * `color` - 3DText color
+> * `Float:text3D_distance` - 3DText draw distance
+> * `Float:trigger_x` - The x coordinate to trigger zone
+> * `Float:trigger_y` - The y coordinate to trigger zone
+> * `Float:trigger_z` - The z coordinate to trigger zone
 > * Вернет (-1) при неудачи (BARRIER_INVALID) или (ID) барьера при успехе
 
 #### BarrierResponse:const function[](playerid, barrierid)
-> Обратный вызов
-> * `playerid` - игрок id
-> * `barrierid` - ID барьера
+> Callback
+> * `playerid` - The ID of the player
+> * `barrierid` - The ID of the barrier
 > * ВОЗВРАЩАЕТ: Всегда используйте 'return 0;', если нужно активировать барьер
 
 #### BarrierDelete(barrierid)
-> Удалить барьер
-> * `barrierid` - ID барьера
+> Remove the barrier
+> * `barrierid` - The ID of the barrier
 > * Вернет (-1) при неудачи (BARRIER_INVALID) или (ID) барьера при успехе
 
 #### BarrierOpen(barrierid)
-> Открыть барьер
-> * `barrierid` - ID барьера
+> Open the barrier
+> * `barrierid` - The ID of the barrier
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### BarrierClose(barrierid)
-> Закрыть барьер
-> * `barrierid` - ID барьера
+> Close the barrier
+> * `barrierid` - The ID of the barrier
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### IsBarrierOpen(barrierid)
 > Узнать состояние барьера
-> * `barrierid` - ID барьера
+> * `barrierid` - The ID of the barrier
 > * Вернет 0 (false) если барьер закрыт или 1 (true) если барьер открыт или (-1) при неудачи (BARRIER_INVALID)
 
 #### SetBarrierMove(barrierid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
 > Изменить положения движущегося объекта
-> * `barrierid` - ID барьера
-> * `Float:x` - Координата x
-> * `Float:y` - Координата y
-> * `Float:z` - Координата z
-> * `Float:rx` - Координата x вращение объекта
-> * `Float:ry` - Координата y вращение объекта
-> * `Float:rz` - Координата z вращение объекта
+> * `barrierid` - The ID of the barrier
+> * `Float:x` - The x coordinate
+> * `Float:y` - The y coordinate
+> * `Float:z` - The z coordinate
+> * `Float:rx` - The x rotation of the object
+> * `Float:ry` - The y rotation of the object
+> * `Float:rz` - The z rotation of the object
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### SetBarrierText(barrierid, const text[], color)
-> Изменить 3D текст
-> * `barrierid` - ID барьера
-> * `text[]` - Текст
-> * `color` - Цвет
+> Change 3D Text
+> * `barrierid` - The ID of the barrier
+> * `text[]` - text
+> * `color` - Color
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierText(barrierid, text[], size = sizeof(text))
-> Узнать текста 3D текста
-> * `barrierid` - ID барьера
-> * `&text` - Текст
+> Узнать текст 3DText
+> * `barrierid` - The ID of the barrier
+> * `&text` - text
 > * `size = sizeof(text)` - sizeof
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierTextColor(barrierid, &color)
 > Узнать цвет 3D текста
-> * `barrierid` - ID барьера
-> * `&color` - Цвет
+> * `barrierid` - The ID of the barrier
+> * `&color` - Color
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### SetBarrierTextPosition(barrierid, Float:x, Float:y, Float:z)
-> Изменить положение 3D текста
-> * `barrierid` - ID барьера
-> * `Float:x` - Координата x
-> * `Float:y` - Координата y
-> * `Float:z` - Координата z
+> Change the position of 3D text
+> * `barrierid` - The ID of the barrier
+> * `Float:x` - The x coordinate
+> * `Float:y` - The y coordinate
+> * `Float:z` - The z coordinate
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### SetBarrierSecondsClose(barrierid, seconds)
-> Изменить время закрытия барьера
-> * `barrierid` - ID барьера
-> * `seconds[]` - Секунды (используйте значение 0, для ручного открытия/закрытия)
+> Change the barrier closing time
+> * `barrierid` - The ID of the barrier
+> * `seconds[]` - Closing time (use the value 0, for manual opening/closing)
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierSecondsCloses(barrierid)
 > Узнать время закрытия барьера
-> * `barrierid` - ID барьера
+> * `barrierid` - The ID of the barrier
 > * Вернет -1 при неудачи (BARRIER_INVALID) или количество секунд
 
 #### SetBarrierMoveSpeed(barrierid, Float:speed)
-> Изменить скорость движущегося объекта
-> * `barrierid` - ID барьера
-> * `Float:speed` - Скорость движения
+> Change the speed of a moving object
+> * `barrierid` - The ID of the barrier
+> * `Float:speed` - The speed at which to move the object (units per second)
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierMoveSpeed(barrierid, &Float:speed)
 > Узнать скорость движущегося объекта
-> * `barrierid` - ID барьера
-> * `&Float:speed` - Скорость движения
+> * `barrierid` - The ID of the barrier
+> * `&Float:speed` - The speed at which to move the object (units per second)
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### SetBarrierTrigger(barrierid, Float:x, Float:y, Float:z)
-> Изменить зону срабатывания
-> * `barrierid` - ID барьера
-> * `Float:x` - Координата x зоны срабатывания
-> * `Float:y` - Координата y зоны срабатывания
-> * `Float:z` - Координата z зоны срабатывания
+> Change the trigger zone
+> * `barrierid` - The ID of the barrier
+> * `Float:x` - The x coordinate to trigger zone
+> * `Float:y` - The y coordinate to trigger zone
+> * `Float:z` - The z coordinate to trigger zone
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierTrigger(barrierid, &Float:x, &Float:y, &Float:z)
 > Узнать зону срабатывания
-> * `barrierid` - ID барьера
-> * `&Float:x` - Координата x зоны срабатывания
-> * `&Float:y` - Координата y зоны срабатывания
-> * `&Float:z` - Координата z зоны срабатывания
+> * `barrierid` - The ID of the barrier
+> * `&Float:x` - The x coordinate to trigger zone
+> * `&Float:y` - The y coordinate to trigger zone
+> * `&Float:z` - The z coordinate to trigger zone
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierSlotID(const function[])
-> Узнать ID барьера
-> * `function[]` - Название функции
+> Get barrier slot ID
+> * `function[]` - Function name
 > * Вернет (-1) при неудачи (BARRIER_INVALID) или (ID) барьера при успехе
 > * ПРИМЕЧАНИЕ: При использовании одинаковых названий 'function[]' вернет ближайший ID барьера!
 
 #### SetBarrierState(barrierid, barrier_state)
-> Изменить статус барьера
-> * `barrierid` - ID барьера
-> * `barrier_state` - Статус барьера
+> Change barrier status
+> * `barrierid` - The ID of the barrier
+> * `barrier_state` - Barrier status
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### GetBarrierState(barrierid)
 > Узнать статус барьера
-> * `barrierid` - ID барьера
+> * `barrierid` - The ID of the barrier
 > * Вернет -1 при неудачи (BARRIER_INVALID) или статус барьера
 
 #### GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
-> Узнать идентификатор объекта барьера
-> * `barrierid` - ID барьера
+> Get barrier object ID
+> * `barrierid` - The ID of the barrier
 > * `&moveid` - Вернет id движущегося объекта
 > * `&extraid` - Вернет id дополнительного объекта
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 #### BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
-> Создать статичный дополнительный объект
-> * `barrierid` - ID барьера
+> Create a second static object
+> * `barrierid` - The ID of the barrier
 > * `object_model` - The model
-> * `Float:x` - Координата x
-> * `Float:y` - Координата y
-> * `Float:z` - Координата z
-> * `Float:rx` - Координата x вращение объекта
-> * `Float:ry` - Координата y вращение объекта
-> * `Float:rz` - Координата z вращение объекта
-> * `worldid` - ID виртуального мира
-> * `interiorid` - ID интерьера 
+> * `Float:x` - The x coordinate to create the object
+> * `Float:y` - The y coordinate to create the object
+> * `Float:z` - The z coordinate to create the object
+> * `Float:rx` - The x rotation of the object
+> * `Float:ry` - The y rotation of the object
+> * `Float:rz` - The z rotation of the object
+> * `worldid` - The virtual world ID
+> * `interiorid` - The interior ID
 > * Вернет -1 при неудачи (BARRIER_INVALID) или (1) при успехе
 
 ## Barrier statuses
 ```pawn
-BARRIER_STATE_PLAYER_AND_DRIVER = -1 // доступен для игроков и транспорта
-BARRIER_STATE_DRIVER_ONLY = 2 // доступен только для транспорта
-BARRIER_STATE_PLAYER_ONLY = 1 // доступен только для игроков
+BARRIER_STATE_PLAYER_AND_DRIVER = -1
+BARRIER_STATE_DRIVER_ONLY = 2
+BARRIER_STATE_PLAYER_ONLY = 1
 ```
 
 ## Definition
@@ -227,9 +227,9 @@ BARRIER_STATE_PLAYER_ONLY = 1 // доступен только для игрок
 
 #define BARRIER_3DTEXT_TEXT         "Посигнальте чтобы открыть шлагбаум"
 
-#define BARRIER_3DTEXT_DISTANCE     18.0 // дистанция открытия
+#define BARRIER_3DTEXT_DISTANCE     18.0 // 3dtext distance
 
-#define BARRIER_3DTEXT_LENGTH       144 // Длина 3d текста
+#define BARRIER_3DTEXT_LENGTH       144 // Length of the 3dtext
 
-#define BARRIER_OBJECT_DISTANCE     200.0 // дистанция прорисовки барьера
+#define BARRIER_OBJECT_DISTANCE     200.0 // barrier drawing distance
 ```
