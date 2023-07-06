@@ -5,9 +5,9 @@
 *   ---------------------------------------------------
 *
 *	Creater - @Bren828	
-*									10 March 2023
+*									6 July 2023
 *
-*   Version: 1.01
+*   Version: 1.1
 *
 *   ---------------------------------------------------
 *
@@ -16,286 +16,214 @@
 *
 *
 *
-* Создать барьер
-*		BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = BARRIER_3DTEXT_TEXT, color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
-*		* function[]: Название функции
-*		* Float:zone_size: Размер зоны срабатывания
-*		* Float:move_speed: Скорость движения объекта
-*       * closing_seconds: Время закрытия (используйте значение 0, для ручного открытия/закрытия)
-*       * object_model: The model
-*       * Float:x: Координата x
-*       * Float:y: Координата y
-*       * Float:z: Координата z
-*       * Float:rx: Координата x вращение объекта
-*       * Float:ry: Координата y вращение объекта
-*       * Float:rz: Координата z вращение объекта
-*       * worldid: ID виртуального мира
-*       * interiorid: ID интерьера 
-*       * barrier_state: Состояние барьера
-*       * text3D[]: 3DText
-*       * color: Цвет 3DText 
-*       * Float:text3D_distance: Дистанция отображения 3DText
-*       * Float:trigger_x: Координата x зоны срабатывания
-*       * Float:trigger_y: Координата y зоны срабатывания 
-*       * Float:trigger_z: Координата z зоны срабатывания
-*		
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*		* Вернет: ID барьера при успехе
+* Create a barrier
+*		BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = "", color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
+*		* function[] - Function name
+*		* Float:zone_size - Trigger distance
+*		* Float:move_speed - The speed at which to move the object (units per second)
+*		* closing_seconds - Closing time (use the value 0, for manual opening/closing)
+*		* object_model - The model
+*		* Float:x - The x coordinate to create the object
+*		* Float:y - The y coordinate to create the object
+*		* Float:z - The z coordinate to create the object
+*		* Float:rx - The x rotation of the object
+*		* Float:ry - The y rotation of the object
+*		* Float:rz - The z rotation of the object
+*		* worldid - The virtual world ID
+*		* interiorid - The interior ID
+*		* barrier_state - Barrier status
+*		* text3D[] - 3DText
+*		* color - 3DText color
+*		* Float:text3D_distance - 3DText draw distance
+*		* Float:trigger_x - The x coordinate to trigger zone
+*		* Float:trigger_y - The y coordinate to trigger zone
+*		* Float:trigger_z - The z coordinate to trigger zone
+*
+*		* Returns (-1) on failure or barrier id
 *
 *
-* Обратный вызов
+* Callback
 *       BarrierResponse:const function[](playerid, barrierid)
-*       * playerid: игрок id
-*       * barrierid: ID барьера
+*       * playerid: The ID of the player
+*       * barrierid: The ID of the barrier
 *
-*		* ВОЗВРАЩАЕТ: Всегда используйте 'return 0;', если нужно активировать барьер
+*		* RETURNS: Always use 'return 0;' if you need to activate the barrier
 *
 *
-* Удалить барьер
+* Remove the barrier
 *       BarrierDelete(barrierid)
-*       * barrierid: ID барьера
+*       * barrierid: The ID of the barrier
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: ID барьера при успехе
+*		* Returns (-1) on failure or barrier id
 *
 *
-* Открыть барьер
+* Open the barrier
 *       BarrierOpen(barrierid)
-*       * barrierid: ID барьера
+*       * barrierid: The ID of the barrier
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Закрыть барьер
+* Close the barrier
 *       BarrierClose(barrierid)
-*       * barrierid: ID барьера
+*       * barrierid: The ID of the barrier
 *       
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Узнать состояние барьера
+* Get the barrier status
 *       IsBarrierOpen(barrierid)
-*       * barrierid: ID барьера
+*       * barrierid: The ID of the barrier
 *       
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 (true)  если барьер открыт
-*       * Вернет: 0 (false) если барьер закрыт
+*		* Returns (0) if closed, (1) if open, (-1) if failed
 *
 *
-* Изменить положения движущегося объекта
+* Set the positions of the moving object
 *       SetBarrierMove(barrierid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
-*       * barrierid: ID барьера
-*       * Float:x: Координата x
-*       * Float:y: Координата y
-*       * Float:z: Координата z
-*       * Float:rx: Координата x вращение объекта
-*       * Float:ry: Координата y вращение объекта
-*       * Float:rz: Координата z вращение объекта
+*       * barrierid: The ID of the barrier
+*       * Float:x - The x coordinate
+*       * Float:y - The y coordinate
+*       * Float:z - The z coordinate
+*       * Float:rx - The x rotation of the object
+*       * Float:ry - The y rotation of the object
+*       * Float:rz - The z rotation of the object
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Изменить 3D текст
+* Set 3D Text
 *       SetBarrierText(barrierid, const text[], color)
-*       * barrierid: ID барьера
-*       * text[]: Текст
-*       * color: Цвет
+*       * barrierid: The ID of the barrier
+*       * text[]: Text
+*       * color: Color
 * 
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
 * Узнать текста 3D текста
 *       GetBarrierText(barrierid, text[], size = sizeof(text))
-*       * barrierid: ID барьера
+*       * barrierid: The ID of the barrier
 *       * &text: Текст
 *       * size = sizeof(text): sizeof
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Узнать цвет 3D текста
+* Get 3D text color
 *       GetBarrierTextColor(barrierid, &color)
-*       * barrierid: ID барьера
-*       * &color: Цвет
+*       * barrierid: The ID of the barrier
+*       * &color: Color
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Изменить положение 3D текста
+* Set position of 3D text
 *       SetBarrierTextPosition(barrierid, Float:x, Float:y, Float:z)
-*       * barrierid: ID барьера
-*       * Float:x: Координата x
-*       * Float:y: Координата y
-*       * Float:z: Координата z
+*       * barrierid: The ID of the barrier
+*       * Float:x: - The x coordinate
+*       * Float:y: - The y coordinate
+*       * Float:z: - The z coordinate
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Изменить время закрытия барьера
+* Set barrier closing time
 *       SetBarrierSecondsClose(barrierid, seconds)
-*       * barrierid: ID барьера
-*       * seconds[]: Секунды (используйте значение 0, для ручного открытия/закрытия)
+*       * barrierid: - The ID of the barrier
+*       * seconds[]: - Closing time (use the value 0, for manual opening/closing)
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Узнать время закрытия барьера
+* Get barrier closing time
 *       GetBarrierSecondsCloses(barrierid)
-*       * barrierid: ID барьера
+*       * barrierid: The ID of the barrier
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: Количество секунд
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Изменить скорость движущегося объекта
+* Set the speed of a moving object
 *       SetBarrierMoveSpeed(barrierid, Float:speed)
 *       * barrierid: ID барьера
-*       * Float:speed: Скорость движения
+*       * Float:speed: The speed at which to move the object (units per second)
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Узнать скорость движущегося объекта
+* Get the speed of a moving object
 *       GetBarrierMoveSpeed(barrierid, &Float:speed)
-*       * barrierid: ID барьера
-*       * &Float:speed: Скорость движения
+*       * barrierid: The ID of the barrier
+*       * &Float:speed: The speed at which to move the object (units per second)
 *       
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Изменить зону срабатывания
+* Set trigger zone
 *       SetBarrierTrigger(barrierid, Float:x, Float:y, Float:z)
-*       * barrierid: ID барьера
-*       * Float:x: Координата x зоны срабатывания
-*       * Float:y: Координата y зоны срабатывания
-*       * Float:z: Координата z зоны срабатывания
+*       * barrierid: The ID of the barrier
+*       * Float:x - The x coordinate to trigger zone
+*       * Float:y - The y coordinate to trigger zone
+*       * Float:z - The z coordinate to trigger zone
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Узнать зону срабатывания
+* Get trigger zone
 *       GetBarrierTrigger(barrierid, &Float:x, &Float:y, &Float:z)
-*       * barrierid: ID барьера
-*       * &Float:x: Координата x зоны срабатывания
-*       * &Float:y: Координата y зоны срабатывания
-*       * &Float:z: Координата z зоны срабатывания
+*       * barrierid: The ID of the barrier
+*       * &Float:x - The x coordinate to trigger zone
+*       * &Float:y - The y coordinate to trigger zone
+*       * &Float:z - The z coordinate to trigger zone
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Узнать ID барьера
+* Get barrier ID
 *       GetBarrierSlotID(const function[])
-*       * function[]: Название функции
+*       * function[]: Function name
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: ID барьера при успехе
+*		* Returns (-1) on failure or barrier id
 *       * ПРИМЕЧАНИЕ: при использовании одинаковых названий 'function[]' вернет ближайший ID барьера!
 *
 *
-* Изменить статус барьера
+* Set the barrier status
 *       SetBarrierState(barrierid, barrier_state)
-*       * barrierid: ID барьера
-*       * barrier_state: Статус барьера
+*       * barrierid: The ID of the barrier
+*       * barrier_state: Barrier status
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Узнать статус барьера
+* Get Barrier status
 *       GetBarrierState(barrierid)
-*       * barrierid: ID барьера
+*       * barrierid: The ID of the barrier
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: статус барьера
+*		* Returns (-1) on failure or status
 *
 *
-* Узнать идентификатор объекта барьера
+* Get the barrier object ID
 *       GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
-*       * barrierid: ID барьера
-*       * &moveid: Вернет id движущегося объекта
-*       * &extraid: Вернет id дополнительного объекта
+*       * barrierid: The ID of the barrier
+*       * &moveid: moving object id
+*       * &extraid: additional object id
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
+*		* Returns (-1) on failure or (1) on success
 *
 *
-* Создать статичный дополнительный объект
+* Create a second extra object
 *       BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
-*       * barrierid: ID барьера
-*       * object_model: The model
-*       * Float:x: Координата x
-*       * Float:y: Координата y
-*       * Float:z: Координата z
-*       * Float:rx: Координата x вращение объекта
-*       * Float:ry: Координата y вращение объекта
-*       * Float:rz: Координата z вращение объекта
-*       * worldid: ID виртуального мира
-*       * interiorid: ID интерьера 
+*       * barrierid - The ID of the barrier
+*       * object_model - The model
+*       * Float:x - The x coordinate to create the object
+*       * Float:y - The y coordinate to create the object
+*       * Float:z - The z coordinate to create the object
+*       * Float:rx - The x rotation of the object
+*       * Float:ry - The y rotation of the object
+*       * Float:rz - The z rotation of the object
+*       * worldid - The virtual world ID
+*       * interiorid - The interior ID
 *
-*		* Вернет: -1 при неудачи (BARRIER_INVALID)
-*       * Вернет: 1 при успехе
-*
-*
-* 		/////////////
-*			Usage
-* 		/////////////
-*
-*
-*       new barrierid = BarrierCreate("Police_Department", 10.0, 0.1, 8,  968, 15.0, -10.0, 3.0,  0.0, -90.0, 0.0,  0, 0); // create a barrier
-*
-*       SetBarrierState(barrierid, BARRIER_STATE_PLAYER_ONLY); // change status only for players
-*           -- OR --
-*       SetBarrierState(GetBarrierSlotID("Police_Department"), BARRIER_STATE_PLAYER_ONLY); // change status only for players
-*
-*
-*		BarrierResponse:Police_Department(playerid, barrierid)
-*		{
-*		    if(GetPlayerSkin(playerid) != 283) 
-*           {
-*               SendClientMessage(playerid, 0xFF0000AA, "Only for cops");
-*               retrun 1;
-*           }
-*
-*			SendClientMessage(playerid, -1, "barrier for police open");
-*			return 0;
-*		}
-*
-*
-*           -- Create other object --
-*
-*
-*       new barrier_door = BarrierCreate("Door_House", 1.2, 0.1, 0,  1507, 22.2386, 9.4609, 2.5172, 0.0, 0.0, 0.0,  0, 0, BARRIER_STATE_PLAYER_ONLY, "Open ALT button", 0x00FFFFFF);
-*       
-*       SetBarrierMove(barrier_door, 22.2386, 9.4609, 2.5172, 0.0, 0.0, 90.0); // adding new moves
-*       
-*       SetBarrierTextPosition(barrier_door, 23.1590,6.3259,3.1172); // change the position of the text
-*       
-*       SetBarrierTrigger(barrier_door, 23.1590,6.3259,3.1172); // change trigger position
-*
-*
-*		BarrierResponse:Door_House(playerid, barrierid)
-*		{
-*		    if(GetPlayerScore(playerid) <= 10) 
-*           {
-*               SendClientMessage(playerid, 0xFF0000AA, "The door is closed");
-*               retrun 1;
-*           }
-*
-*			SendClientMessage(playerid, -1, "The door is open");
-*			return 0;
-*		}
+*       * Returns (-1) on failure or (1) on success
 *
 *
 */
@@ -307,35 +235,35 @@
 
 
 #if !defined MAX_BARRIERS
-    #define MAX_BARRIERS                200
+    #define MAX_BARRIERS                    200
 #endif
 
 #if !defined BARRIER_MAX_FUNCTION_NAME
-	#define BARRIER_MAX_FUNCTION_NAME   30
+	#define BARRIER_MAX_FUNCTION_NAME       30
 #endif
 
 #if !defined BARRIER_KEY_STATE_ONFOOT
-    #define BARRIER_KEY_STATE_ONFOOT    KEY_WALK // кнопка взаимодействия с барьером на ногах
+    #define BARRIER_KEY_STATE_ONFOOT        KEY_WALK
 #endif
 
 #if !defined BARRIER_KEY_STATE_DRIVER
-    #define BARRIER_KEY_STATE_DRIVER    KEY_CROUCH // кнопка взаимодействия с барьером в транспорте
+    #define BARRIER_KEY_STATE_DRIVER        KEY_CROUCH 
 #endif
 
 #if !defined BARRIER_3DTEXT_TEXT
-    #define BARRIER_3DTEXT_TEXT         "Посигнальте чтобы открыть шлагбаум"
+    static BARRIER_3DTEXT_TEXT[] =          "Press H to open";
 #endif
 
 #if !defined BARRIER_3DTEXT_DISTANCE
-	#define BARRIER_3DTEXT_DISTANCE     18.0 // дистанция 3d текста
+	#define BARRIER_3DTEXT_DISTANCE         18.0
 #endif
 
 #if !defined BARRIER_3DTEXT_LENGTH
-	#define BARRIER_3DTEXT_LENGTH   	144	// Длина 3d текста
+	#define BARRIER_3DTEXT_LENGTH   	    144	
 #endif
 
 #if !defined BARRIER_OBJECT_DISTANCE
-	#define BARRIER_OBJECT_DISTANCE    	200.0 // дистанция прорисовки барьера
+	#define BARRIER_OBJECT_DISTANCE     	200.0 
 #endif
 
 #define BarrierResponse:%0(%1) forward %0(%1); public %0(%1)
@@ -383,10 +311,9 @@ enum barrier_gates_EN
     Float:bg_3DTextDistance
 }
 static barrier_gates[MAX_BARRIERS][barrier_gates_EN];
-static bool:barrier_gates_Timer = false;
 
 
-stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = BARRIER_3DTEXT_TEXT, color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
+stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = "", color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
 {
     if(strlen(function) <= 0 || strlen(function) >= BARRIER_MAX_FUNCTION_NAME) return printf("easy-barrier --->>> | BarrierCreate | error, while creating '%s' | wrong name length (length from 1 to %d)", function, BARRIER_MAX_FUNCTION_NAME) & -1;
 	new slot = -1;
@@ -445,15 +372,14 @@ stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing
         }
     }
 
-	if(strlen(text3D) >= 1) barrier_gates[slot][bg_Text3D] = CreateDynamic3DTextLabel(text3D, color, x, y, z+0.5, text3D_distance, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, worldid, interiorid, -1, text3D_distance);
+	if(strlen(text3D) == 0) barrier_gates[slot][bg_Text3D] = CreateDynamic3DTextLabel(BARRIER_3DTEXT_TEXT, color, x, y, z+0.5, text3D_distance, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, worldid, interiorid, -1, text3D_distance);
+	else barrier_gates[slot][bg_Text3D] = CreateDynamic3DTextLabel(text3D, color, x, y, z+0.5, text3D_distance, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, worldid, interiorid, -1, text3D_distance);
+    
     barrier_gates[slot][bg_trigger_x] = (trigger_x == 0.0) ? (x):(trigger_x);
     barrier_gates[slot][bg_trigger_y] = (trigger_y == 0.0) ? (y):(trigger_y);
     barrier_gates[slot][bg_trigger_z] = (trigger_z == 0.0) ? (z):(trigger_z);
-    if(barrier_gates_Timer == false)
-    {
-        SetTimer("_Barrier_Timer", 1000, true);
-        barrier_gates_Timer = true;
-    }
+    
+    if(slot == 0) SetTimer("_Barrier_Timer", 1000, true);
     return slot;
 }
 
