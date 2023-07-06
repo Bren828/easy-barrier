@@ -4,15 +4,11 @@ Language: **English** or [Russian](https://github.com/Bren828/easy-barrier/blob/
 Упрощенное создание движущихся объектов, таких как ворота, двери и шлагбаумы. С возвращением на прошлое положение через определенное время.
 
 ## Reference
-* [Download](https://github.com/Bren828/easy-barrier#download)
 * [Installation](https://github.com/Bren828/easy-barrier#installation)
 * [Example](https://github.com/Bren828/easy-barrier#example)
 * [Functions](https://github.com/Bren828/easy-barrier#functions)
 * [Barrier statuses](https://github.com/Bren828/easy-barrier#barrier-statuses)
 * [Definition](https://github.com/Bren828/easy-barrier#definition)
-
-## Download
-[Releases page](https://github.com/Bren828/easy-barrier/releases)
 
 ## Installation
 
@@ -32,7 +28,7 @@ BarrierResponse:Police_Department(playerid, barrierid)
     if(GetPlayerSkin(playerid) != 283) 
     {
         SendClientMessage(playerid, 0xFF0000AA, "Only for cops");
-        retrun 1;
+        return 1;
     }
 
     SendClientMessage(playerid, -1, "barrier for police open");
