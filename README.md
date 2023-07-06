@@ -220,7 +220,7 @@ BARRIER_STATE_PLAYER_ONLY = 1
 
 #define BARRIER_KEY_STATE_DRIVER    KEY_CROUCH
 
-static BARRIER_3DTEXT_TEXT[] =      "Посигнальте чтобы открыть шлагбаум";
+static BARRIER_3DTEXT_TEXT[] =      "Press H to open";
 
 #define BARRIER_3DTEXT_DISTANCE     18.0
 
