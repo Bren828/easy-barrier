@@ -1,5 +1,6 @@
 # easy-barrier 
 Creating barriers and other objects in SAMP
+![Crosshair](https://raw.githubusercontent.com/Bren828/easy-barrier/main/preview.png)
 
 ## Reference
 * [Installation](https://github.com/Bren828/easy-barrier#installation)
