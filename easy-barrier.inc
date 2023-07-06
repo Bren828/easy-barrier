@@ -100,10 +100,10 @@
 *		* Returns (-1) on failure or (1) on success
 *
 *
-* Узнать текста 3D текста
+* Г“Г§Г­Г ГІГј ГІГҐГЄГ±ГІГ  3D ГІГҐГЄГ±ГІГ 
 *       GetBarrierText(barrierid, text[], size = sizeof(text))
 *       * barrierid: The ID of the barrier
-*       * &text: Текст
+*       * &text: Г’ГҐГЄГ±ГІ
 *       * size = sizeof(text): sizeof
 *
 *		* Returns (-1) on failure or (1) on success
@@ -144,7 +144,7 @@
 *
 * Set the speed of a moving object
 *       SetBarrierMoveSpeed(barrierid, Float:speed)
-*       * barrierid: ID барьера
+*       * barrierid: ID ГЎГ Г°ГјГҐГ°Г 
 *       * Float:speed: The speed at which to move the object (units per second)
 *
 *		* Returns (-1) on failure or (1) on success
@@ -183,7 +183,7 @@
 *       * function[]: Function name
 *
 *		* Returns (-1) on failure or barrier id
-*       * ПРИМЕЧАНИЕ: при использовании одинаковых названий 'function[]' вернет ближайший ID барьера!
+*       * ГЏГђГ€ГЊГ…Г—ГЂГЌГ€Г…: ГЇГ°ГЁ ГЁГ±ГЇГ®Г«ГјГ§Г®ГўГ Г­ГЁГЁ Г®Г¤ГЁГ­Г ГЄГ®ГўГ»Гµ Г­Г Г§ГўГ Г­ГЁГ© 'function[]' ГўГҐГ°Г­ГҐГІ ГЎГ«ГЁГ¦Г Г©ГёГЁГ© ID ГЎГ Г°ГјГҐГ°Г !
 *
 *
 * Set the barrier status
@@ -348,7 +348,7 @@ stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing
     barrier_gates[slot][bg_ClosingTimeStatic] = closing_seconds;
     barrier_gates[slot][bg_BarrierState] = barrier_state;
     barrier_gates[slot][bg_Text3D] = Text3D:INVALID_3DTEXT_ID;
-    format(barrier_gates[slot][bg_3DText_Text], BARRIER_3DTEXT_LENGTH, text3D);
+    format(barrier_gates[slot][bg_3DText_Text], BARRIER_3DTEXT_LENGTH, (strlen(text3D) == 0) ? (BARRIER_3DTEXT_TEXT):(text3D));
     barrier_gates[slot][bg_3DTextDistance] = text3D_distance;
     barrier_gates[slot][bg_3DTextColor] = color;
 
