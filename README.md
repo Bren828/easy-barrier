@@ -27,7 +27,7 @@ Include in your code and begin using the library:
 new barrierid = BarrierCreate("Police_Department", 10.0, 0.1, 8,  968, 15.0, -10.0, 3.0,  0.0, -90.0, 0.0,  0, 0); // create a barrier
 SetBarrierState(barrierid, BARRIER_STATE_PLAYER_ONLY); // change status only for players
 
-PickupResponse:Police_Department(playerid, barrierid)
+BarrierResponse:Police_Department(playerid, barrierid)
 {
     if(GetPlayerSkin(playerid) != 283) 
     {
