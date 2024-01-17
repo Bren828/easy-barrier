@@ -1,5 +1,7 @@
 # easy-barrier 
-Creating barriers and other objects in SAMP
+Creating gates doors in samp\
+105 ready-made objects for movement
+
 ![Crosshair](https://raw.githubusercontent.com/Bren828/easy-barrier/main/preview.png)
 
 ## Reference
@@ -19,8 +21,11 @@ Include in your code and begin using the library:
 ## Example
 
 ```pawn
-new barrierid = BarrierCreate("Police_Department", 10.0, 0.1, 8,  968, 15.0, -10.0, 3.0,  0.0, -90.0, 0.0,  0, 0); // create a barrier
+new barrierid = BarrierCreate("Police_Department", 10.0, 0.05, 8,  968, 15.0, -10.0, 3.0,  0.0, -90.0, 0.0,  0, 0); // create a barrier
 SetBarrierState(barrierid, BARRIER_STATE_PLAYER_ONLY); // change status only for players
+
+barrierid = BarrierCreate("Police_Department", 3.0, 0.5, 0,  19302, 24.637180, -8.755125, 3.397187, 0.000000, 0.000000, 86.175994); // create a door
+SetBarrierTypeOpening(barrierid, BARRIER_MOVEMENT_TYPE_RIGHT, 80.0); // optional
 
 BarrierResponse:Police_Department(playerid, barrierid)
 {
@@ -37,13 +42,13 @@ BarrierResponse:Police_Department(playerid, barrierid)
 
 ## Functions
 
-#### BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_DRIVER_ONLY, const text3D[] = "", color = -1, Float:text3D_distance = BARRIER_3DTEXT_DISTANCE, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
+#### BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_PLAYER_AND_DRIVER, const text3d[] = "", color = -1, Float:text3d_distance = 3.0, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
 > Create a barrier
 > * `function[]` - Function name
 > * `Float:zone_size` - Trigger distance
 > * `Float:move_speed` - The speed at which to move the object (units per second)
 > * `closing_seconds` - Closing time (use the value 0, for manual opening/closing)
-> * `object_model` - The model
+> * `modelid` - The model
 > * `Float:x` - The x coordinate to create the object
 > * `Float:y` - The y coordinate to create the object
 > * `Float:z` - The z coordinate to create the object
@@ -53,9 +58,9 @@ BarrierResponse:Police_Department(playerid, barrierid)
 > * `worldid` - The virtual world ID
 > * `interiorid` - The interior ID
 > * `barrier_state` - Barrier status
-> * `text3D[]` - 3DText
+> * `text3d[]` - 3DText
 > * `color` - 3DText color
-> * `Float:text3D_distance` - 3DText draw distance
+> * `Float:text3d_distance` - 3DText draw distance
 > * `Float:trigger_x` - The x coordinate to trigger zone
 > * `Float:trigger_y` - The y coordinate to trigger zone
 > * `Float:trigger_z` - The z coordinate to trigger zone
@@ -87,6 +92,49 @@ BarrierResponse:Police_Department(playerid, barrierid)
 > * `barrierid` - The ID of the barrier
 > * Returns (0) if closed, (1) if open, (-1) if failed
 
+#### SetBarrierTypeOpening(barrierid, type, Float:percent = 100.0)
+> Set the type of movement
+> * `barrierid` - The ID of the barrier
+> * `type` - Type of movement
+> * `percent` - Prcentage of movement
+> * Returns (-1) on failure or (1) on success
+
+#### SetBarrierMovementX(barrierid, Float:x)
+> Set the movement by the x coordinate
+> * `barrierid` - The ID of the barrier
+> * `Float:x` - The x coordinate
+> * Returns (-1) on failure or (1) on success
+
+#### SetBarrierMovementY(barrierid, Float:y)
+> Set the movement by the y coordinate
+> * `barrierid` - The ID of the barrier
+> * `Float:y` - The y coordinate
+> * Returns (-1) on failure or (1) on success
+
+#### SetBarrierMovementZ(barrierid, Float:z)
+> Set the movement by the z coordinate
+> * `barrierid` - The ID of the barrier
+> * `Float:z` - The z coordinate
+> * Returns (-1) on failure or (1) on success
+
+#### SetBarrierMovementRX(barrierid, Float:rx)
+> Set the movement by the rx coordinate
+> * `barrierid` - The ID of the barrier
+> * `Float:rx` - The rx coordinate
+> * Returns (-1) on failure or (1) on success
+
+#### SetBarrierMovementRY(barrierid, Float:ry)
+> Set the movement by the ry coordinate
+> * `barrierid` - The ID of the barrier
+> * `Float:ry` - The ry coordinate
+> * Returns (-1) on failure or (1) on success
+
+#### SetBarrierMovementRZ(barrierid, Float:rz)
+> Set the movement by the rz coordinate
+> * `barrierid` - The ID of the barrier
+> * `Float:rz` - The x coordinate
+> * Returns (-1) on failure or (1) on success
+
 #### SetBarrierMove(barrierid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz)
 > Set the positions of the moving object
 > * `barrierid` - The ID of the barrier
@@ -98,7 +146,7 @@ BarrierResponse:Police_Department(playerid, barrierid)
 > * `Float:rz` - The z rotation of the object
 > * Returns (-1) on failure or (1) on success
 
-#### SetBarrierText(barrierid, const text[], color)
+#### SetBarrierText(barrierid, const text[], color = 0)
 > Set 3D Text
 > * `barrierid` - The ID of the barrier
 > * `text[]` - text
@@ -112,11 +160,16 @@ BarrierResponse:Police_Department(playerid, barrierid)
 > * `size = sizeof(text)` - sizeof
 > * Returns (-1) on failure or (1) on success
 
-#### GetBarrierTextColor(barrierid, &color)
+#### SetBarrierTextColor(barrierid, color)
+> Set 3D text color
+> * `barrierid` - The ID of the barrier
+> * `color` - Color
+> * Returns (-1) on failure or (1) on success
+
+#### GetBarrierTextColor(barrierid)
 > Get 3D text color
 > * `barrierid` - The ID of the barrier
-> * `&color` - Color
-> * Returns (-1) on failure or (1) on success
+> * Returns (-1) on failure or (color) on success
 
 #### SetBarrierTextPosition(barrierid, Float:x, Float:y, Float:z)
 > Set position of 3D text
@@ -208,21 +261,24 @@ BarrierResponse:Police_Department(playerid, barrierid)
 BARRIER_STATE_PLAYER_AND_DRIVER = -1
 BARRIER_STATE_DRIVER_ONLY = 2
 BARRIER_STATE_PLAYER_ONLY = 1
+
+BARRIER_MOVEMENT_TYPE_OUTSIDE = 0
+BARRIER_MOVEMENT_TYPE_INSIDE = 1
+BARRIER_MOVEMENT_TYPE_RIGHT = 2
+BARRIER_MOVEMENT_TYPE_LEFT = 3
+BARRIER_MOVEMENT_TYPE_UP = 4
+BARRIER_MOVEMENT_TYPE_DOWN = 5
 ```
 
 ## Definition
 ```pawn
 #define MAX_BARRIERS                200
 
-#define BARRIER_MAX_FUNCTION_NAME   30
+#define BARRIER_MAX_FUNCTION_NAME   32
 
 #define BARRIER_KEY_STATE_ONFOOT    KEY_WALK
 
 #define BARRIER_KEY_STATE_DRIVER    KEY_CROUCH
-
-static BARRIER_3DTEXT_TEXT[] =      "Press H to open";
-
-#define BARRIER_3DTEXT_DISTANCE     18.0
 
 #define BARRIER_3DTEXT_LENGTH       144
 
