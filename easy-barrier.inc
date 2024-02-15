@@ -5,9 +5,9 @@
 *   ---------------------------------------------------
 *
 *	Creater - @Bren828	
-*									17 January 2024
+*									15 February 2024
 *
-*   Version: 1.2
+*   Version: 1.3
 *
 *   ---------------------------------------------------
 *
@@ -51,6 +51,11 @@
 
 #if !defined BARRIER_OBJECT_DISTANCE
 	#define BARRIER_OBJECT_DISTANCE     	200.0 
+#endif
+
+
+#if !defined BARRIER_NOT_CREATE_EXTRA_OBJECT
+    #define BARRIER_NOT_CREATE_EXTRA_OBJECT 
 #endif
 
 
@@ -110,7 +115,9 @@ enum BARRIER_GATES_EN
     bg_ClosingTime,
     bg_ClosingTimeStatic,
     bg_BarrierState,
-    bg_3DText_Text[BARRIER_3DTEXT_LENGTH]
+    bg_3DText_Text[BARRIER_3DTEXT_LENGTH],
+    bg_Attach,
+    bg_AttachFrom
 }
 
 static barrier_gates[MAX_BARRIERS][BARRIER_GATES_EN];
@@ -284,19 +291,26 @@ stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing
     barrier_gates[barrierid][bg_ClosingTime] = 0;
     barrier_gates[barrierid][bg_BarrierState] = barrier_state;
     barrier_gates[barrierid][bg_Text3D] = Text3D:INVALID_3DTEXT_ID;
+    barrier_gates[barrierid][bg_Attach] = -1;
+    barrier_gates[barrierid][bg_AttachFrom] = -1;
+    barrier_gates[barrierid][bg_ExtraObject] = 0;
 
-    if(modelid == 968)
-    {
-        barrier_gates[barrierid][bg_ExtraObject] = CreateDynamicObject(966, x, y, z-0.8,  rx, 0.0, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
-        barrier_gates[barrierid][bg_MoveObject] = CreateDynamicObject(modelid, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
-    }
-    else barrier_gates[barrierid][bg_MoveObject] = CreateDynamicObject(modelid, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
+    barrier_gates[barrierid][bg_MoveObject] = CreateDynamicObject(modelid, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
 
-    barrier_gates[barrierid][bg_trigger_x] = (trigger_x == 0.0) ? (x):(trigger_x);
-    barrier_gates[barrierid][bg_trigger_y] = (trigger_y == 0.0) ? (y):(trigger_y);
-    barrier_gates[barrierid][bg_trigger_z] = (trigger_z == 0.0) ? (z):(trigger_z);
+    #if defined OnBarrierObjectCreated
+        OnBarrierObjectCreated(barrierid, barrier_gates[barrierid][bg_MoveObject], modelid);
+    #endif
+
+    #if defined BARRIER_NOT_CREATE_EXTRA_OBJECT
+        if(modelid == 968) barrier_gates[barrierid][bg_ExtraObject] = CreateDynamicObject(966, x, y, z-0.8,  rx, 0.0, rz + 180.0,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
+    #endif
 
     SetBarrierTypeOpening(barrierid, -1);
+
+    if(trigger_x != 0.0) barrier_gates[barrierid][bg_trigger_x] = trigger_x;
+    if(trigger_y != 0.0) barrier_gates[barrierid][bg_trigger_y] = trigger_y;
+    if(trigger_z != 0.0) barrier_gates[barrierid][bg_trigger_z] = trigger_z;
+
 	if(strlen(text3d) >= 1) 
     {
         format(barrier_gates[barrierid][bg_3DText_Text], BARRIER_3DTEXT_LENGTH, text3d);
@@ -317,6 +331,18 @@ stock BarrierOpen(barrierid)
         barrier_gates[barrierid][bg_MoveObject_rx], barrier_gates[barrierid][bg_MoveObject_ry], barrier_gates[barrierid][bg_MoveObject_rz]);
 
     barrier_gates[barrierid][bg_Open] = true;
+
+    if(barrier_gates[barrierid][bg_Attach] != -1 && barrier_gates[ barrier_gates[barrierid][bg_Attach] ][bg_Create])
+    {
+        new attachid = barrier_gates[barrierid][bg_Attach];
+
+        MoveDynamicObject(barrier_gates[attachid][bg_MoveObject], 
+            barrier_gates[attachid][bg_MoveObject_x], barrier_gates[attachid][bg_MoveObject_y], barrier_gates[attachid][bg_MoveObject_z]-0.020, 
+            barrier_gates[attachid][bg_MoveSpeed],
+            barrier_gates[attachid][bg_MoveObject_rx], barrier_gates[attachid][bg_MoveObject_ry], barrier_gates[attachid][bg_MoveObject_rz]);
+
+        barrier_gates[attachid][bg_Open] = true;
+    }
     return 1;
 }
 
@@ -334,6 +360,19 @@ public BarrierClose(barrierid)
 
     barrier_gates[barrierid][bg_Open] = false;
 	barrier_gates[barrierid][bg_ClosingTime] = 0;
+
+    if(barrier_gates[barrierid][bg_Attach] != -1 && barrier_gates[ barrier_gates[barrierid][bg_Attach] ][bg_Create]) 
+    {
+        new attachid = barrier_gates[barrierid][bg_Attach];
+
+        MoveDynamicObject(barrier_gates[attachid][bg_MoveObject],
+            barrier_gates[attachid][bg_Object_x], barrier_gates[attachid][bg_Object_y], barrier_gates[attachid][bg_Object_z], 
+            barrier_gates[attachid][bg_MoveSpeed], 
+            barrier_gates[attachid][bg_Object_rx], barrier_gates[attachid][bg_Object_ry], barrier_gates[attachid][bg_Object_rz]);
+
+        barrier_gates[attachid][bg_Open] = false;
+        barrier_gates[attachid][bg_ClosingTime] = 0;
+    }
     return 1;
 }
 
@@ -412,11 +451,11 @@ stock SetBarrierTypeOpening(barrierid, type, Float:percent = 100.0)
     if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create] || !(-1 <= type <= 5) ) 
         return -1;
     
-    new modelid = Streamer_GetIntData(STREAMER_TYPE_OBJECT, barrier_gates[barrierid][bg_MoveObject], E_STREAMER_MODEL_ID);
+    new eb_modelid = Streamer_GetIntData(STREAMER_TYPE_OBJECT, barrier_gates[barrierid][bg_MoveObject], E_STREAMER_MODEL_ID);
     
-    for(new object; object < sizeof(barrier_object_info); object ++)
+    for(new _object_eb; _object_eb < sizeof(barrier_object_info); _object_eb ++)
     {
-        if(modelid != barrier_object_info[object][boi_Model]) 
+        if(eb_modelid != barrier_object_info[_object_eb][boi_Model]) 
             continue;
         
         barrier_gates[barrierid][bg_MoveObject_x] = barrier_gates[barrierid][bg_Object_x];
@@ -426,17 +465,17 @@ stock SetBarrierTypeOpening(barrierid, type, Float:percent = 100.0)
 
         if(type == -1) 
         {
-            type = barrier_object_info[object][boi_DefaultType];
-            percent = barrier_object_info[object][boi_DefaultPercent];
+            type = barrier_object_info[_object_eb][boi_DefaultType];
+            percent = barrier_object_info[_object_eb][boi_DefaultPercent];
 
             new Float:rz = 360 - barrier_gates[barrierid][bg_Object_rz];
             
-            barrier_gates[barrierid][bg_trigger_x] = (floatsin(rz, degrees) * barrier_object_info[object][boi_DefaultTriggerY] + floatcos(rz, degrees) * barrier_object_info[object][boi_DefaultTriggerX] + barrier_gates[barrierid][bg_Object_x]);
-            barrier_gates[barrierid][bg_trigger_y] = (floatcos(rz, degrees) * barrier_object_info[object][boi_DefaultTriggerY] - floatsin(rz, degrees) * barrier_object_info[object][boi_DefaultTriggerX] + barrier_gates[barrierid][bg_Object_y]);
-            barrier_gates[barrierid][bg_trigger_z] = barrier_gates[barrierid][bg_Object_z] + barrier_object_info[object][boi_DefaultTriggerZ];
+            barrier_gates[barrierid][bg_trigger_x] = (floatsin(rz, degrees) * barrier_object_info[_object_eb][boi_DefaultTriggerY] + floatcos(rz, degrees) * barrier_object_info[_object_eb][boi_DefaultTriggerX] + barrier_gates[barrierid][bg_Object_x]);
+            barrier_gates[barrierid][bg_trigger_y] = (floatcos(rz, degrees) * barrier_object_info[_object_eb][boi_DefaultTriggerY] - floatsin(rz, degrees) * barrier_object_info[_object_eb][boi_DefaultTriggerX] + barrier_gates[barrierid][bg_Object_y]);
+            barrier_gates[barrierid][bg_trigger_z] = barrier_gates[barrierid][bg_Object_z] + barrier_object_info[_object_eb][boi_DefaultTriggerZ];
         }
 
-        if(modelid == 968)
+        if(eb_modelid == 968)
         {
             barrier_gates[barrierid][bg_MoveObject_ry] = barrier_gates[barrierid][bg_Object_ry] - (barrier_gates[barrierid][bg_Object_ry] * percent) / 100;
             return 1;
@@ -451,16 +490,16 @@ stock SetBarrierTypeOpening(barrierid, type, Float:percent = 100.0)
                     Float:rz = 360 - barrier_gates[barrierid][bg_Object_rz],
                     Float:xoff, 
                     Float:yoff,
-                    Float:scale = (type == BARRIER_MOVEMENT_TYPE_LEFT) ? ((barrier_object_info[object][boi_Width] * percent) / 100) : (-(barrier_object_info[object][boi_Width] * percent) / 100);
+                    Float:scale = (type == BARRIER_MOVEMENT_TYPE_LEFT) ? ((barrier_object_info[_object_eb][boi_Width] * percent) / 100) : (-(barrier_object_info[_object_eb][boi_Width] * percent) / 100);
 
-                if(barrier_object_info[object][boi_CoordinateX] == true) xoff = scale;
+                if(barrier_object_info[_object_eb][boi_CoordinateX] == true) xoff = scale;
                 else yoff = scale;
 
                 barrier_gates[barrierid][bg_MoveObject_x] = (floatsin(rz, degrees) * yoff + floatcos(rz, degrees) * xoff + x);
                 barrier_gates[barrierid][bg_MoveObject_y] = (floatcos(rz, degrees) * yoff - floatsin(rz, degrees) * xoff + y);
             }
-            case BARRIER_MOVEMENT_TYPE_UP: barrier_gates[barrierid][bg_MoveObject_z] = barrier_gates[barrierid][bg_Object_z] + ((barrier_object_info[object][boi_Height] * percent) / 100);
-            case BARRIER_MOVEMENT_TYPE_DOWN: barrier_gates[barrierid][bg_MoveObject_z] = barrier_gates[barrierid][bg_Object_z] - ((barrier_object_info[object][boi_Height] * percent) / 100);
+            case BARRIER_MOVEMENT_TYPE_UP: barrier_gates[barrierid][bg_MoveObject_z] = barrier_gates[barrierid][bg_Object_z] + ((barrier_object_info[_object_eb][boi_Height] * percent) / 100);
+            case BARRIER_MOVEMENT_TYPE_DOWN: barrier_gates[barrierid][bg_MoveObject_z] = barrier_gates[barrierid][bg_Object_z] - ((barrier_object_info[_object_eb][boi_Height] * percent) / 100);
             case BARRIER_MOVEMENT_TYPE_OUTSIDE: barrier_gates[barrierid][bg_MoveObject_rz] = barrier_gates[barrierid][bg_Object_rz] + ((180.0 * percent) / 100);
             case BARRIER_MOVEMENT_TYPE_INSIDE: barrier_gates[barrierid][bg_MoveObject_rz] = barrier_gates[barrierid][bg_Object_rz] - ((180.0 * percent) / 100);
         }
@@ -661,6 +700,19 @@ stock BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:
 }
 
 
+stock DeleteBarrierExtraObject(barrierid)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
+        return -1;
+
+    if(IsValidDynamicObject(barrier_gates[barrierid][bg_ExtraObject])) 
+        DestroyDynamicObject(barrier_gates[barrierid][bg_ExtraObject]);
+
+    barrier_gates[barrierid][bg_ExtraObject] = 0;    
+    return 1;
+}
+
+
 stock SetBarrierState(barrierid, barrier_state)
 {
     if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
@@ -691,8 +743,42 @@ stock GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
 
     moveid = barrier_gates[barrierid][bg_MoveObject];
     extraid = barrier_gates[barrierid][bg_ExtraObject];
+
+    return moveid;
+}
+
+
+stock AttachBarrierToBarrier(barrierid, attachid)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create] || barrierid == attachid) 
+        return -1;
+
+    if(!(0 <= attachid < MAX_BARRIERS) || !barrier_gates[attachid][bg_Create]) 
+        return -1;
+
+    if(barrier_gates[barrierid][bg_Attach] != -1 || barrier_gates[attachid][bg_AttachFrom] != -1) 
+        return -1;
+
+    barrier_gates[barrierid][bg_Attach] = attachid;
+    barrier_gates[attachid][bg_AttachFrom] = barrierid;
     return 1;
 }
+
+
+stock UnAttachBarrierFromBarrier(barrierid)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create] || barrierid == attachid) 
+        return -1;
+
+    if(barrier_gates[barrierid][bg_Attach] == -1) 
+        return -1;
+
+    barrier_gates[ barrier_gates[barrierid][bg_Attach] ][bg_AttachFrom] = -1;
+
+    barrier_gates[barrierid][bg_Attach] = -1;
+    return 1;
+}
+
 
 
 #if defined _inc_y_hooks || defined _INC_y_hooks
@@ -706,6 +792,9 @@ stock GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
 		for(new barrierid; barrierid < MAX_BARRIERS; barrierid ++)
 		{
 			if(!barrier_gates[barrierid][bg_Create]) 
+                continue;
+
+			if(barrier_gates[barrierid][bg_AttachFrom] != -1) 
                 continue;
 
             if(!IsPlayerInRangeOfPoint(playerid, barrier_gates[barrierid][bg_ZoneSize], barrier_gates[barrierid][bg_trigger_x], barrier_gates[barrierid][bg_trigger_y], barrier_gates[barrierid][bg_trigger_z])) 
@@ -731,7 +820,6 @@ stock GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
             {
                 if(barrier_gates[barrierid][bg_Open] == false) BarrierOpen(barrierid);
                 else BarrierClose(barrierid);
-
                 return 1;
             }
 
@@ -742,7 +830,6 @@ stock GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
 
             barrier_gates[barrierid][bg_ClosingTime] = barrier_gates[barrierid][bg_ClosingTimeStatic];
             SetTimerEx("BarrierClose", barrier_gates[barrierid][bg_ClosingTime] * 1000, false, "d", barrierid);
-
 			return 1;
 		}
 	}
