@@ -8,6 +8,7 @@ Creating gates doors in samp\
 * [Installation](https://github.com/Bren828/easy-barrier#installation)
 * [Example](https://github.com/Bren828/easy-barrier#example)
 * [Functions](https://github.com/Bren828/easy-barrier#functions)
+* [Callback](https://github.com/Bren828/easy-barrier#callback)
 * [Barrier statuses](https://github.com/Bren828/easy-barrier#barrier-statuses)
 * [Definition](https://github.com/Bren828/easy-barrier#definition)
 
@@ -38,6 +39,21 @@ BarrierResponse:Police_Department(playerid, barrierid)
     SendClientMessage(playerid, -1, "barrier for police open");
     return 0;
 }
+
+//optional
+
+forward OnBarrierObjectCreated(barrierid, objectid, modelid);
+public OnBarrierObjectCreated(barrierid, objectid, modelid)
+{
+    switch(modelid)
+    {
+        case 968:
+        {
+            SetDynamicObjectMaterial(objectid, 1, 3306, "cunte_house1", "sw_patiodoors", 0);
+        }
+    }
+    return 1;
+}
 ```
 
 ## Functions
@@ -65,12 +81,6 @@ BarrierResponse:Police_Department(playerid, barrierid)
 > * `Float:trigger_y` - The y coordinate to trigger zone
 > * `Float:trigger_z` - The z coordinate to trigger zone
 > * Returns (-1) on failure or (barrier id)
-
-#### BarrierResponse:const function[](playerid, barrierid)
-> Callback
-> * `playerid` - The ID of the player
-> * `barrierid` - The ID of the barrier
-> * NOTE: Always use 'return 0;' if you need to activate the barrier
 
 #### BarrierDelete(barrierid)
 > Remove the barrier
@@ -145,6 +155,15 @@ BarrierResponse:Police_Department(playerid, barrierid)
 > * `Float:ry` - The y rotation of the object
 > * `Float:rz` - The z rotation of the object
 > * Returns (-1) on failure or (1) on success
+
+#### AttachBarrierToBarrier(barrierid, attachid)
+> Attach barrier to barrier
+> * `barrierid` - The ID of the barrier
+> * `attachid` - The ID of the barrier to attach
+
+#### UnAttachBarrierFromBarrier(barrierid)
+> UnAttach the barrier from the barrier
+> * `barrierid` - The ID of the barrier
 
 #### SetBarrierText(barrierid, const text[], color = 0)
 > Set 3D Text
@@ -256,6 +275,25 @@ BarrierResponse:Police_Department(playerid, barrierid)
 > * `interiorid` - The interior ID
 > * Returns (-1) on failure or (1) on success
 
+#### DeleteBarrierExtraObject(barrierid)
+> Delete an extra barrier object
+> * `barrierid` - The ID of the barrier
+
+## Callback
+
+#### BarrierResponse:const function[](playerid, barrierid)
+> Called when interacting with a barrier
+> * `const function[]` - Function name
+> * `playerid` - The ID of the player
+> * `barrierid` - The ID of the barrier
+> * NOTE: Always use 'return 0;' if you need to activate the barrier
+
+#### public OnBarrierObjectCreated(barrierid, objectid, modelid)
+> Called when creating a barrier
+> * `barrierid` - The ID of the barrier
+> * `objectid` - Object ID
+> * `modelid` - Object model
+
 ## Barrier statuses
 ```pawn
 BARRIER_STATE_PLAYER_AND_DRIVER = -1
@@ -283,4 +321,6 @@ BARRIER_MOVEMENT_TYPE_DOWN = 5
 #define BARRIER_3DTEXT_LENGTH       144
 
 #define BARRIER_OBJECT_DISTANCE     200.0
+
+#define BARRIER_NOT_CREATE_EXTRA_OBJECT // only for the object model 968
 ```
