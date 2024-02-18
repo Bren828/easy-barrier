@@ -243,7 +243,7 @@ static const barrier_object_info[][BARRIER_OBJECT_INFO_EN] =
     {3036, 4.84, 3.53, true, BARRIER_MOVEMENT_TYPE_RIGHT, 100.0, 2.5, 0.0, -0.8},
     {989, 1.65, 3.65, false, BARRIER_MOVEMENT_TYPE_LEFT, 100.0, 0.0, 0.0, -0.8},
     {19313, 13.98, 6.60, true, BARRIER_MOVEMENT_TYPE_RIGHT, 100.0, 0.0, 0.0, -2.0},
-    {968, 0.58, 7.13, false, BARRIER_MOVEMENT_TYPE_UP, 100.0, -3.6, 0.0, 0.0}
+    {968, 0.58, 7.13, false, BARRIER_MOVEMENT_TYPE_UP, 100.0, 3.6, 0.0, 0.0}
 };
 
 
