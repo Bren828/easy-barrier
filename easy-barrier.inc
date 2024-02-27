@@ -767,7 +767,7 @@ stock AttachBarrierToBarrier(barrierid, attachid)
 
 stock UnAttachBarrierFromBarrier(barrierid)
 {
-    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create] || barrierid == attachid) 
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
         return -1;
 
     if(barrier_gates[barrierid][bg_Attach] == -1) 
