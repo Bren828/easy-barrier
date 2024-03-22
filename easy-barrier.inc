@@ -5,9 +5,9 @@
 *   ---------------------------------------------------
 *
 *	Creater - @Bren828	
-*									15 February 2024
+*									22 March 2024
 *
-*   Version: 1.3
+*   Version: 1.4
 *
 *   ---------------------------------------------------
 *
@@ -25,32 +25,37 @@
 
 
 #if !defined MAX_BARRIERS
-    #define MAX_BARRIERS                    200
+    #define MAX_BARRIERS 200
+#endif
+
+
+#if !defined BARRIER_MAX_ATTACH
+    #define BARRIER_MAX_ATTACH 10
 #endif
 
 
 #if !defined BARRIER_MAX_FUNCTION_NAME
-	#define BARRIER_MAX_FUNCTION_NAME       32
+	#define BARRIER_MAX_FUNCTION_NAME 32
 #endif
 
 
 #if !defined BARRIER_KEY_STATE_ONFOOT
-    #define BARRIER_KEY_STATE_ONFOOT        KEY_WALK
+    #define BARRIER_KEY_STATE_ONFOOT KEY_WALK
 #endif
 
 
 #if !defined BARRIER_KEY_STATE_DRIVER
-    #define BARRIER_KEY_STATE_DRIVER        KEY_CROUCH 
+    #define BARRIER_KEY_STATE_DRIVER KEY_CROUCH 
 #endif
 
 
 #if !defined BARRIER_3DTEXT_LENGTH
-	#define BARRIER_3DTEXT_LENGTH   	    144	
+	#define BARRIER_3DTEXT_LENGTH 144	
 #endif
 
 
 #if !defined BARRIER_OBJECT_DISTANCE
-	#define BARRIER_OBJECT_DISTANCE     	200.0 
+	#define BARRIER_OBJECT_DISTANCE 150.0 
 #endif
 
 
@@ -74,7 +79,11 @@ enum
     BARRIER_MOVEMENT_TYPE_RIGHT = 2,
     BARRIER_MOVEMENT_TYPE_LEFT = 3,
     BARRIER_MOVEMENT_TYPE_UP = 4,
-    BARRIER_MOVEMENT_TYPE_DOWN = 5
+    BARRIER_MOVEMENT_TYPE_DOWN = 5,
+
+    BARRIER_DATA_AREA_ID = 0,
+    BARRIER_DATA_ID = 1,
+    BARRIER_DATA_EXTRA = 2,
 }
 
 
@@ -82,10 +91,11 @@ enum BARRIER_GATES_EN
 {
     bool:bg_Create,
     bg_Function[BARRIER_MAX_FUNCTION_NAME],
-    Float:bg_ZoneSize,
+    Float:bg_Radius,
     
     bg_MoveObject, 
     bg_ExtraObject,
+    bg_Sphere,
 
     Float:bg_Object_x,
     Float:bg_Object_y,
@@ -112,12 +122,22 @@ enum BARRIER_GATES_EN
     Text3D:bg_Text3D,
     bool:bg_Open,
 
+    bg_Key,
     bg_ClosingTime,
     bg_ClosingTimeStatic,
     bg_BarrierState,
     bg_3DText_Text[BARRIER_3DTEXT_LENGTH],
-    bg_Attach,
-    bg_AttachFrom
+    bg_Attach[BARRIER_MAX_ATTACH],
+    bg_AttachFrom,
+    bg_MaxAttach,
+
+    bg_extra_sphere,
+    bg_extra_key,
+    Float:bg_extra_trigger_radius,
+    bg_extra_trigger_state,
+    Float:bg_extra_trigger_x,
+    Float:bg_extra_trigger_y,
+    Float:bg_extra_trigger_z
 }
 
 static barrier_gates[MAX_BARRIERS][BARRIER_GATES_EN];
@@ -243,11 +263,15 @@ static const barrier_object_info[][BARRIER_OBJECT_INFO_EN] =
     {3036, 4.84, 3.53, true, BARRIER_MOVEMENT_TYPE_RIGHT, 100.0, 2.5, 0.0, -0.8},
     {989, 1.65, 3.65, false, BARRIER_MOVEMENT_TYPE_LEFT, 100.0, 0.0, 0.0, -0.8},
     {19313, 13.98, 6.60, true, BARRIER_MOVEMENT_TYPE_RIGHT, 100.0, 0.0, 0.0, -2.0},
-    {968, 0.58, 7.13, false, BARRIER_MOVEMENT_TYPE_UP, 100.0, 3.6, 0.0, 0.0}
+    {968, 0.58, 7.13, false, BARRIER_MOVEMENT_TYPE_UP, 100.0, 3.6, 0.0, 0.0},
+    {3089, 1.50, 2.70, false, BARRIER_MOVEMENT_TYPE_OUTSIDE, 50.0, 0.75, 0.0, -0.5}
 };
 
 
-stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_PLAYER_AND_DRIVER, const text3d[] = "", color = -1, Float:text3d_distance = 3.0, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
+static player_barrier_enter[MAX_PLAYERS];
+
+
+stock BarrierCreate(const function[], Float:radius, Float:move_speed, closing_seconds, modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_PLAYER_AND_DRIVER, const text3d[] = "", color = -1, Float:text3d_distance = 3.0, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0, key = 0)
 {
     if(!(0 < strlen(function) < BARRIER_MAX_FUNCTION_NAME)) 
         return -1;
@@ -268,7 +292,7 @@ stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing
 
     barrier_gates[barrierid][bg_Create] = true;
     format(barrier_gates[barrierid][bg_Function], BARRIER_MAX_FUNCTION_NAME, function);
-    barrier_gates[barrierid][bg_ZoneSize] = zone_size;
+    barrier_gates[barrierid][bg_Radius] = radius;
     barrier_gates[barrierid][bg_MoveSpeed] = move_speed;
     barrier_gates[barrierid][bg_ClosingTimeStatic] = closing_seconds;
 
@@ -288,12 +312,22 @@ stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing
     barrier_gates[barrierid][bg_MoveObject_ry] = ry;
     barrier_gates[barrierid][bg_MoveObject_rz] = rz;
 
+    if(key == 0) barrier_gates[barrierid][bg_Key] = (barrier_state == BARRIER_STATE_DRIVER_ONLY) ? (BARRIER_KEY_STATE_DRIVER): (BARRIER_KEY_STATE_ONFOOT);
+    else barrier_gates[barrierid][bg_Key] = key;
     barrier_gates[barrierid][bg_ClosingTime] = 0;
     barrier_gates[barrierid][bg_BarrierState] = barrier_state;
     barrier_gates[barrierid][bg_Text3D] = Text3D:INVALID_3DTEXT_ID;
-    barrier_gates[barrierid][bg_Attach] = -1;
+    for(new at; at < BARRIER_MAX_ATTACH; at ++) barrier_gates[barrierid][bg_Attach][at] = -1;
     barrier_gates[barrierid][bg_AttachFrom] = -1;
+    barrier_gates[barrierid][bg_MaxAttach] = 0;
     barrier_gates[barrierid][bg_ExtraObject] = 0;
+
+    barrier_gates[barrierid][bg_extra_key] = 0;
+    barrier_gates[barrierid][bg_extra_trigger_state] = 0;
+    barrier_gates[barrierid][bg_extra_trigger_radius] = 0.0;
+    barrier_gates[barrierid][bg_extra_trigger_x] = 0.0;
+    barrier_gates[barrierid][bg_extra_trigger_y] = 0.0;
+    barrier_gates[barrierid][bg_extra_trigger_z] = 0.0;
 
     barrier_gates[barrierid][bg_MoveObject] = CreateDynamicObject(modelid, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
 
@@ -305,11 +339,28 @@ stock BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing
         if(modelid == 968) barrier_gates[barrierid][bg_ExtraObject] = CreateDynamicObject(966, x, y, z-0.8,  rx, 0.0, rz + 180.0,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
     #endif
 
-    SetBarrierTypeOpening(barrierid, -1);
+    if(!SetBarrierTypeOpening(barrierid, -1))
+    {
+        barrier_gates[barrierid][bg_trigger_x] = (trigger_x != 0.0) ? (trigger_x):(x);
+        barrier_gates[barrierid][bg_trigger_y] = (trigger_y != 0.0) ? (trigger_y):(y);
+        barrier_gates[barrierid][bg_trigger_z] = (trigger_z != 0.0) ? (trigger_z):(z);
+    }
+    else 
+    {
+        if(trigger_x != 0.0) barrier_gates[barrierid][bg_trigger_x] = trigger_x;
+        if(trigger_y != 0.0) barrier_gates[barrierid][bg_trigger_y] = trigger_y;
+        if(trigger_z != 0.0) barrier_gates[barrierid][bg_trigger_z] = trigger_z;
+    }
 
-    if(trigger_x != 0.0) barrier_gates[barrierid][bg_trigger_x] = trigger_x;
-    if(trigger_y != 0.0) barrier_gates[barrierid][bg_trigger_y] = trigger_y;
-    if(trigger_z != 0.0) barrier_gates[barrierid][bg_trigger_z] = trigger_z;
+    barrier_gates[barrierid][bg_Sphere] = CreateDynamicSphere(barrier_gates[barrierid][bg_trigger_x], barrier_gates[barrierid][bg_trigger_y], barrier_gates[barrierid][bg_trigger_z], radius, worldid, interiorid);
+    
+    new eb_arr[3];
+    eb_arr[BARRIER_DATA_AREA_ID] = barrier_gates[barrierid][bg_Sphere];
+    eb_arr[BARRIER_DATA_ID] = barrierid;
+    eb_arr[BARRIER_DATA_EXTRA] = 0;
+
+    Streamer_SetArrayData(STREAMER_TYPE_AREA, barrier_gates[barrierid][bg_Sphere], E_STREAMER_EXTRA_ID, eb_arr);
+
 
 	if(strlen(text3d) >= 1) 
     {
@@ -332,16 +383,24 @@ stock BarrierOpen(barrierid)
 
     barrier_gates[barrierid][bg_Open] = true;
 
-    if(barrier_gates[barrierid][bg_Attach] != -1 && barrier_gates[ barrier_gates[barrierid][bg_Attach] ][bg_Create])
+    if(barrier_gates[barrierid][bg_MaxAttach] >= 1)
     {
-        new attachid = barrier_gates[barrierid][bg_Attach];
+        new attachid = -1;
 
-        MoveDynamicObject(barrier_gates[attachid][bg_MoveObject], 
-            barrier_gates[attachid][bg_MoveObject_x], barrier_gates[attachid][bg_MoveObject_y], barrier_gates[attachid][bg_MoveObject_z]-0.020, 
-            barrier_gates[attachid][bg_MoveSpeed],
-            barrier_gates[attachid][bg_MoveObject_rx], barrier_gates[attachid][bg_MoveObject_ry], barrier_gates[attachid][bg_MoveObject_rz]);
+        for(new at; at < BARRIER_MAX_ATTACH; at ++)
+        {
+            if(barrier_gates[barrierid][bg_Attach][at] == -1) 
+                continue;
 
-        barrier_gates[attachid][bg_Open] = true;
+            attachid = barrier_gates[barrierid][bg_Attach][at];
+
+            MoveDynamicObject(barrier_gates[attachid][bg_MoveObject], 
+                barrier_gates[attachid][bg_MoveObject_x], barrier_gates[attachid][bg_MoveObject_y], barrier_gates[attachid][bg_MoveObject_z]-0.020, 
+                barrier_gates[attachid][bg_MoveSpeed],
+                barrier_gates[attachid][bg_MoveObject_rx], barrier_gates[attachid][bg_MoveObject_ry], barrier_gates[attachid][bg_MoveObject_rz]);
+
+            barrier_gates[attachid][bg_Open] = true;
+        }
     }
     return 1;
 }
@@ -361,17 +420,25 @@ public BarrierClose(barrierid)
     barrier_gates[barrierid][bg_Open] = false;
 	barrier_gates[barrierid][bg_ClosingTime] = 0;
 
-    if(barrier_gates[barrierid][bg_Attach] != -1 && barrier_gates[ barrier_gates[barrierid][bg_Attach] ][bg_Create]) 
+    if(barrier_gates[barrierid][bg_MaxAttach] >= 1)
     {
-        new attachid = barrier_gates[barrierid][bg_Attach];
+        new attachid = -1;
 
-        MoveDynamicObject(barrier_gates[attachid][bg_MoveObject],
-            barrier_gates[attachid][bg_Object_x], barrier_gates[attachid][bg_Object_y], barrier_gates[attachid][bg_Object_z], 
-            barrier_gates[attachid][bg_MoveSpeed], 
-            barrier_gates[attachid][bg_Object_rx], barrier_gates[attachid][bg_Object_ry], barrier_gates[attachid][bg_Object_rz]);
+        for(new at; at < BARRIER_MAX_ATTACH; at ++)
+        {
+            if(barrier_gates[barrierid][bg_Attach][at] == -1) 
+                continue;
 
-        barrier_gates[attachid][bg_Open] = false;
-        barrier_gates[attachid][bg_ClosingTime] = 0;
+            attachid = barrier_gates[barrierid][bg_Attach][at];
+
+            MoveDynamicObject(barrier_gates[attachid][bg_MoveObject],
+                barrier_gates[attachid][bg_Object_x], barrier_gates[attachid][bg_Object_y], barrier_gates[attachid][bg_Object_z], 
+                barrier_gates[attachid][bg_MoveSpeed], 
+                barrier_gates[attachid][bg_Object_rx], barrier_gates[attachid][bg_Object_ry], barrier_gates[attachid][bg_Object_rz]);
+
+            barrier_gates[attachid][bg_Open] = false;
+            barrier_gates[attachid][bg_ClosingTime] = 0;
+        }
     }
     return 1;
 }
@@ -580,7 +647,7 @@ stock SetBarrierTextPosition(barrierid, Float:x, Float:y, Float:z)
 }
 
 
-stock SetBarrierSecondsClose(barrierid, seconds)
+stock SetBarrierClosingTime(barrierid, seconds)
 {
     if(!(0 <= barrierid < MAX_BARRIERS) || !(0 <= seconds <= 90000000) || !barrier_gates[barrierid][bg_Create]) 
         return -1;
@@ -590,7 +657,7 @@ stock SetBarrierSecondsClose(barrierid, seconds)
 }
 
 
-stock GetBarrierSecondsCloses(barrierid)
+stock GetBarrierClosingTime(barrierid)
 {
     if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
         return -1;
@@ -609,13 +676,12 @@ stock SetBarrierMoveSpeed(barrierid, Float:speed)
 }
 
 
-stock GetBarrierMoveSpeed(barrierid, &Float:speed)
+stock Float:GetBarrierMoveSpeed(barrierid)
 {
     if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
-        return -1;
+        return -1.0;
 
-    speed = barrier_gates[barrierid][bg_MoveSpeed];
-    return 1;
+    return barrier_gates[barrierid][bg_MoveSpeed];
 }
 
 
@@ -628,6 +694,12 @@ stock SetBarrierTrigger(barrierid, Float:x, Float:y, Float:z)
     barrier_gates[barrierid][bg_trigger_y] = y;
     barrier_gates[barrierid][bg_trigger_z] = z;
 
+    if(IsValidDynamicArea(barrier_gates[barrierid][bg_Sphere]))
+    {
+        Streamer_SetFloatData(STREAMER_TYPE_AREA, barrier_gates[barrierid][bg_Sphere], E_STREAMER_X, x);
+        Streamer_SetFloatData(STREAMER_TYPE_AREA, barrier_gates[barrierid][bg_Sphere], E_STREAMER_Y, y);
+        Streamer_SetFloatData(STREAMER_TYPE_AREA, barrier_gates[barrierid][bg_Sphere], E_STREAMER_Z, z);
+    }
     return 1;
 }
 
@@ -640,6 +712,53 @@ stock GetBarrierTrigger(barrierid, &Float:x, &Float:y, &Float:z)
     x = barrier_gates[barrierid][bg_trigger_x];
     y = barrier_gates[barrierid][bg_trigger_y];
     z = barrier_gates[barrierid][bg_trigger_z];
+    return 1;
+}
+
+
+stock SetBarrierTriggerExtra(barrierid, Float:x, Float:y, Float:z, Float:radius, barrier_state = BARRIER_STATE_PLAYER_ONLY, key = BARRIER_KEY_STATE_ONFOOT)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
+        return -1;
+
+    if(barrier_state != BARRIER_STATE_PLAYER_AND_DRIVER && 
+        barrier_state != BARRIER_STATE_DRIVER_ONLY && 
+            barrier_state != BARRIER_STATE_PLAYER_ONLY) return -1;
+
+    if(IsValidDynamicArea(barrier_gates[barrierid][bg_extra_sphere])) 
+        DestroyDynamicArea(barrier_gates[barrierid][bg_extra_sphere]);
+
+    barrier_gates[barrierid][bg_extra_sphere] = CreateDynamicSphere(x, y, z, radius, barrier_gates[barrierid][bg_Worldid], barrier_gates[barrierid][bg_Interiorid]);
+
+    new eb_arr[3];
+    eb_arr[BARRIER_DATA_AREA_ID] = barrier_gates[barrierid][bg_extra_sphere];
+    eb_arr[BARRIER_DATA_ID] = barrierid;
+    eb_arr[BARRIER_DATA_EXTRA] = 1;
+
+    Streamer_SetArrayData(STREAMER_TYPE_AREA, barrier_gates[barrierid][bg_extra_sphere], E_STREAMER_EXTRA_ID, eb_arr);
+
+    barrier_gates[barrierid][bg_extra_key] = key; 
+    barrier_gates[barrierid][bg_extra_trigger_radius] = radius;
+    barrier_gates[barrierid][bg_extra_trigger_state] = barrier_state;
+    barrier_gates[barrierid][bg_extra_trigger_x] = x;
+    barrier_gates[barrierid][bg_extra_trigger_y] = y;
+    barrier_gates[barrierid][bg_extra_trigger_z] = z;
+
+    return 1;
+}
+
+
+stock GetBarrierTriggerExtra(barrierid, &Float:x, &Float:y, &Float:z, &Float:radius = 0.0, &barrier_state = 0, &key = 0)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
+        return -1;
+
+    radius = barrier_gates[barrierid][bg_extra_trigger_radius];
+    barrier_state = barrier_gates[barrierid][bg_extra_trigger_state];
+    key = barrier_gates[barrierid][bg_extra_key];
+    x = barrier_gates[barrierid][bg_extra_trigger_x];
+    y = barrier_gates[barrierid][bg_extra_trigger_y];
+    z = barrier_gates[barrierid][bg_extra_trigger_z];
     return 1;
 }
 
@@ -658,11 +777,71 @@ stock BarrierDelete(barrierid)
     if(barrier_gates[barrierid][bg_Text3D] != Text3D:INVALID_3DTEXT_ID) 
         DestroyDynamic3DTextLabel(barrier_gates[barrierid][bg_Text3D]);
 
+    if(IsValidDynamicArea(barrier_gates[barrierid][bg_Sphere])) 
+        DestroyDynamicArea(barrier_gates[barrierid][bg_Sphere]);    
+
+    if(IsValidDynamicArea(barrier_gates[barrierid][bg_extra_sphere])) 
+        DestroyDynamicArea(barrier_gates[barrierid][bg_extra_sphere]);    
+
     barrier_gates[barrierid][bg_Create] = false;
     barrier_gates[barrierid][bg_Function][0] = '\0';
     barrier_gates[barrierid][bg_MoveObject] = 0;
     barrier_gates[barrierid][bg_ExtraObject] = 0;
     barrier_gates[barrierid][bg_Text3D] = Text3D:INVALID_3DTEXT_ID;
+
+    new attachid;
+    if(barrier_gates[barrierid][bg_AttachFrom] != -1)
+    {
+        attachid = barrier_gates[barrierid][bg_AttachFrom];
+        
+        barrier_gates[barrierid][bg_AttachFrom] = -1;
+
+        for(new at; at < BARRIER_MAX_ATTACH; at ++)
+        {
+            if(barrier_gates[attachid][bg_Attach][at] != barrierid) 
+                continue;
+
+            barrier_gates[attachid][bg_Attach][at] = -1;
+            barrier_gates[attachid][bg_MaxAttach] --;
+            break;
+        }
+    }
+
+    if(barrier_gates[barrierid][bg_MaxAttach] >= 1)
+    {
+        for(new at; at < BARRIER_MAX_ATTACH; at ++)
+        {
+            if(barrier_gates[barrierid][bg_Attach][at] == -1) 
+                continue;
+
+            attachid = barrier_gates[barrierid][bg_Attach][at];    
+
+            barrier_gates[barrierid][bg_Attach][at] = -1;
+            barrier_gates[barrierid][bg_MaxAttach] --;
+
+
+            barrier_gates[attachid][bg_AttachFrom] = -1;
+
+            if(IsValidDynamicArea(barrier_gates[attachid][bg_Sphere])) 
+                DestroyDynamicArea(barrier_gates[attachid][bg_Sphere]);
+
+            barrier_gates[attachid][bg_Sphere] = CreateDynamicSphere(
+                barrier_gates[attachid][bg_trigger_x], 
+                barrier_gates[attachid][bg_trigger_y], 
+                barrier_gates[attachid][bg_trigger_z],
+                barrier_gates[attachid][bg_Radius], 
+                barrier_gates[attachid][bg_Worldid], 
+                barrier_gates[attachid][bg_Interiorid]);
+            
+            
+            new eb_arr[3];
+            eb_arr[BARRIER_DATA_AREA_ID] = barrier_gates[attachid][bg_Sphere];
+            eb_arr[BARRIER_DATA_ID] = attachid;
+            eb_arr[BARRIER_DATA_EXTRA] = 0;
+
+            Streamer_SetArrayData(STREAMER_TYPE_AREA, barrier_gates[attachid][bg_Sphere], E_STREAMER_EXTRA_ID, eb_arr);
+        }
+    }
 
     return barrierid;
 }
@@ -718,10 +897,6 @@ stock SetBarrierState(barrierid, barrier_state)
     if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
         return -1;
 
-    if(barrier_state != BARRIER_STATE_PLAYER_AND_DRIVER && 
-        barrier_state != BARRIER_STATE_DRIVER_ONLY && 
-            barrier_state != BARRIER_STATE_PLAYER_ONLY) return -1;
-
     barrier_gates[barrierid][bg_BarrierState] = barrier_state;
     return 1;
 }
@@ -756,27 +931,113 @@ stock AttachBarrierToBarrier(barrierid, attachid)
     if(!(0 <= attachid < MAX_BARRIERS) || !barrier_gates[attachid][bg_Create]) 
         return -1;
 
-    if(barrier_gates[barrierid][bg_Attach] != -1 || barrier_gates[attachid][bg_AttachFrom] != -1) 
+    if(barrier_gates[attachid][bg_AttachFrom] != -1) 
         return -1;
 
-    barrier_gates[barrierid][bg_Attach] = attachid;
-    barrier_gates[attachid][bg_AttachFrom] = barrierid;
+    for(new at; at < BARRIER_MAX_ATTACH; at ++)
+    {
+        if(barrier_gates[barrierid][bg_Attach][at] != -1) 
+            continue;
+
+        barrier_gates[barrierid][bg_Attach][at] = attachid;
+        barrier_gates[barrierid][bg_MaxAttach] ++;
+
+        barrier_gates[attachid][bg_AttachFrom] = barrierid;
+
+        if(IsValidDynamicArea(barrier_gates[attachid][bg_Sphere])) 
+            DestroyDynamicArea(barrier_gates[attachid][bg_Sphere]);
+
+        return 1;
+    }
+
+    return -1;
+}
+
+
+stock UnAttachBarrierFromBarrier(barrierid, attachid)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create] || barrierid == attachid) 
+        return -1;
+
+    if(!(0 <= attachid < MAX_BARRIERS) || !barrier_gates[attachid][bg_Create]) 
+        return -1;
+
+    if(barrier_gates[attachid][bg_AttachFrom] == -1) 
+        return -1;
+
+    for(new at; at < BARRIER_MAX_ATTACH; at ++)
+    {
+        if(barrier_gates[barrierid][bg_Attach][at] != attachid) 
+            continue;
+
+        barrier_gates[barrierid][bg_Attach][at] = -1;
+        barrier_gates[barrierid][bg_MaxAttach] --;
+
+
+        barrier_gates[attachid][bg_AttachFrom] = -1;
+
+        if(IsValidDynamicArea(barrier_gates[attachid][bg_Sphere])) 
+            DestroyDynamicArea(barrier_gates[attachid][bg_Sphere]);
+
+        barrier_gates[attachid][bg_Sphere] = CreateDynamicSphere(
+            barrier_gates[attachid][bg_trigger_x], 
+            barrier_gates[attachid][bg_trigger_y], 
+            barrier_gates[attachid][bg_trigger_z],
+            barrier_gates[attachid][bg_Radius], 
+            barrier_gates[attachid][bg_Worldid], 
+            barrier_gates[attachid][bg_Interiorid]);
+        
+        
+        new eb_arr[3];
+        eb_arr[BARRIER_DATA_AREA_ID] = barrier_gates[attachid][bg_Sphere];
+        eb_arr[BARRIER_DATA_ID] = attachid;
+        eb_arr[BARRIER_DATA_EXTRA] = 0;
+
+        Streamer_SetArrayData(STREAMER_TYPE_AREA, barrier_gates[attachid][bg_Sphere], E_STREAMER_EXTRA_ID, eb_arr);
+
+        return 1;
+    }
+
+    return -1;
+}
+
+
+stock GetBarrierCompare(barrierid, function[])
+{
+	if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
+        return -1;
+
+	return !strcmp(function, barrier_gates[barrierid][bg_Function], false);
+}
+
+
+stock GetBarrierFunctionName(barrierid, function[], size_function = sizeof(function))
+{
+	if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
+        return -1;
+
+	format(function, size_function, barrier_gates[barrierid][bg_Function]);
     return 1;
 }
 
 
-stock UnAttachBarrierFromBarrier(barrierid)
+
+stock SetBarrierKey(barrierid, key)
 {
     if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
         return -1;
 
-    if(barrier_gates[barrierid][bg_Attach] == -1) 
+    barrier_gates[barrierid][bg_Key] = key;
+    return 1;
+}
+
+
+stock GetBarrierKey(barrierid)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
         return -1;
 
-    barrier_gates[ barrier_gates[barrierid][bg_Attach] ][bg_AttachFrom] = -1;
-
-    barrier_gates[barrierid][bg_Attach] = -1;
-    return 1;
+    return barrier_gates[barrierid][bg_Key];
 }
 
 
@@ -787,52 +1048,52 @@ stock UnAttachBarrierFromBarrier(barrierid)
 	public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 #endif
 {
-	if(newkeys & BARRIER_KEY_STATE_ONFOOT && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT || newkeys & BARRIER_KEY_STATE_DRIVER && GetPlayerState(playerid) == PLAYER_STATE_DRIVER)
-	{
-		for(new barrierid; barrierid < MAX_BARRIERS; barrierid ++)
-		{
-			if(!barrier_gates[barrierid][bg_Create]) 
-                continue;
+    if(player_barrier_enter[playerid] != -1)
+    {
+        new barrierid = player_barrier_enter[playerid];
 
-			if(barrier_gates[barrierid][bg_AttachFrom] != -1) 
-                continue;
+        if(!barrier_gates[barrierid][bg_Create] || 
+            !IsPlayerInDynamicArea(playerid, barrier_gates[barrierid][bg_Sphere]) && 
+            !IsPlayerInDynamicArea(playerid, barrier_gates[barrierid][bg_extra_sphere])) 
+        {
+            player_barrier_enter[playerid] = -1;
+        }
 
-            if(!IsPlayerInRangeOfPoint(playerid, barrier_gates[barrierid][bg_ZoneSize], barrier_gates[barrierid][bg_trigger_x], barrier_gates[barrierid][bg_trigger_y], barrier_gates[barrierid][bg_trigger_z])) 
-                continue;
-            
-            if(barrier_gates[barrierid][bg_Worldid] != -1 && GetPlayerVirtualWorld(playerid) != barrier_gates[barrierid][bg_Worldid]) 
-                continue; 
+        if(player_barrier_enter[playerid] != -1)
+        {
+            new eb_barrier_state = barrier_gates[barrierid][bg_BarrierState],
+                eb_barrier_extra_state = barrier_gates[barrierid][bg_extra_trigger_state],
+                eb_player_state = GetPlayerState(playerid);
 
-            if(barrier_gates[barrierid][bg_Interiorid] != -1 && GetPlayerInterior(playerid) != barrier_gates[barrierid][bg_Interiorid]) 
-                continue; 
-            
-            if(barrier_gates[barrierid][bg_BarrierState] != BARRIER_STATE_PLAYER_AND_DRIVER && barrier_gates[barrierid][bg_BarrierState] != GetPlayerState(playerid)) 
-                return 1;
-            
-            if(barrier_gates[barrierid][bg_ClosingTimeStatic] != 0 && barrier_gates[barrierid][bg_Open] == true) 
-                return 1;
 
-            // BarrierResponse
-            if(CallLocalFunction(barrier_gates[barrierid][bg_Function], "dd", playerid, barrierid) == 1) 
-                return 1;
-            
-            if(barrier_gates[barrierid][bg_ClosingTimeStatic] == 0)
+            if(IsPlayerInDynamicArea(playerid, barrier_gates[barrierid][bg_Sphere]) && newkeys & barrier_gates[barrierid][bg_Key] && (eb_barrier_state == BARRIER_STATE_PLAYER_AND_DRIVER || eb_barrier_state == eb_player_state) ||
+                IsPlayerInDynamicArea(playerid, barrier_gates[barrierid][bg_extra_sphere]) && newkeys & barrier_gates[barrierid][bg_extra_key] && (eb_barrier_extra_state == BARRIER_STATE_PLAYER_AND_DRIVER || eb_barrier_extra_state == eb_player_state))
             {
-                if(barrier_gates[barrierid][bg_Open] == false) BarrierOpen(barrierid);
-                else BarrierClose(barrierid);
+                if(barrier_gates[barrierid][bg_ClosingTimeStatic] != 0 && barrier_gates[barrierid][bg_Open] == true) 
+                    return 1;
+
+                // BarrierResponse
+                if(CallLocalFunction(barrier_gates[barrierid][bg_Function], "dd", playerid, barrierid) == 1) 
+                    return 1;
+                
+                if(barrier_gates[barrierid][bg_ClosingTimeStatic] == 0)
+                {
+                    if(barrier_gates[barrierid][bg_Open] == false) BarrierOpen(barrierid);
+                    else BarrierClose(barrierid);
+                    return 1;
+                }
+
+                if(barrier_gates[barrierid][bg_ClosingTime] != 0) 
+                    return 1;
+
+                BarrierOpen(barrierid);
+
+                barrier_gates[barrierid][bg_ClosingTime] = barrier_gates[barrierid][bg_ClosingTimeStatic];
+                SetTimerEx("BarrierClose", barrier_gates[barrierid][bg_ClosingTime] * 1000, false, "d", barrierid);
                 return 1;
             }
-
-            if(barrier_gates[barrierid][bg_ClosingTime] != 0) 
-                return 1;
-
-            BarrierOpen(barrierid);
-
-            barrier_gates[barrierid][bg_ClosingTime] = barrier_gates[barrierid][bg_ClosingTimeStatic];
-            SetTimerEx("BarrierClose", barrier_gates[barrierid][bg_ClosingTime] * 1000, false, "d", barrierid);
-			return 1;
-		}
-	}
+        }
+    }
 
     #if !defined _inc_y_hooks && !defined _INC_y_hooks && defined OnPlayerKeyState_easy_barrier
 		return OnPlayerKeyState_easy_barrier(playerid, newkeys, oldkeys);
@@ -854,3 +1115,96 @@ stock UnAttachBarrierFromBarrier(barrierid)
 	#endif
 #endif
 
+
+
+#if defined _inc_y_hooks || defined _INC_y_hooks
+	hook OnPlayerEnterDynamicArea(playerid, areaid)
+#else
+	public OnPlayerEnterDynamicArea(playerid, areaid)
+#endif
+{
+    new eb_arr[3];
+    Streamer_GetArrayData(STREAMER_TYPE_AREA, areaid, E_STREAMER_EXTRA_ID, eb_arr);
+
+    if(areaid == eb_arr[BARRIER_DATA_AREA_ID])
+    {
+        new barrierid = eb_arr[BARRIER_DATA_ID],
+            barrier_extra = eb_arr[BARRIER_DATA_EXTRA];
+
+        if( barrier_extra == 0 && (barrier_gates[barrierid][bg_BarrierState] == BARRIER_STATE_PLAYER_AND_DRIVER || barrier_gates[barrierid][bg_BarrierState] == GetPlayerState(playerid)) || 
+            barrier_extra == 1 && (barrier_gates[barrierid][bg_extra_trigger_state] == BARRIER_STATE_PLAYER_AND_DRIVER || barrier_gates[barrierid][bg_extra_trigger_state] == GetPlayerState(playerid)) )
+        {
+            player_barrier_enter[playerid] = barrierid;
+
+            #if defined OnBarrierEnter
+                OnBarrierEnter(playerid, barrierid, (barrier_extra == 0) ? (barrier_gates[barrierid][bg_Key]):(barrier_gates[barrierid][bg_extra_key]) );
+            #endif
+        }
+    }
+
+
+    #if !defined _inc_y_hooks && !defined _INC_y_hooks && defined OnEnterDynamicArea_easy_barrier
+		return OnEnterDynamicArea_easy_barrier(playerid, areaid);
+	#else
+		return 1;
+	#endif
+}
+
+#if !defined _inc_y_hooks && !defined _INC_y_hooks
+	#if defined _ALS_OnPlayerEnterDynamicArea
+		#undef OnPlayerEnterDynamicArea
+	#else
+		#define _ALS_OnPlayerEnterDynamicArea
+	#endif
+	#define OnPlayerEnterDynamicArea OnEnterDynamicArea_easy_barrier
+
+	#if defined OnEnterDynamicArea_easy_barrier
+		forward OnEnterDynamicArea_easy_barrier(playerid, areaid);
+	#endif
+#endif
+
+
+
+#if defined _inc_y_hooks || defined _INC_y_hooks
+	hook OnPlayerLeaveDynamicArea(playerid, areaid)
+#else
+	public OnPlayerLeaveDynamicArea(playerid, areaid)
+#endif
+{
+    new eb_arr[3];
+    Streamer_GetArrayData(STREAMER_TYPE_AREA, areaid, E_STREAMER_EXTRA_ID, eb_arr);
+
+    if(areaid == eb_arr[BARRIER_DATA_AREA_ID])
+    {
+        new barrierid = eb_arr[BARRIER_DATA_ID],
+            barrier_extra = eb_arr[BARRIER_DATA_EXTRA];
+
+        if( barrier_extra == 0 && (barrier_gates[barrierid][bg_BarrierState] == BARRIER_STATE_PLAYER_AND_DRIVER || barrier_gates[barrierid][bg_BarrierState] == GetPlayerState(playerid)) || 
+            barrier_extra == 1 && (barrier_gates[barrierid][bg_extra_trigger_state] == BARRIER_STATE_PLAYER_AND_DRIVER || barrier_gates[barrierid][bg_extra_trigger_state] == GetPlayerState(playerid)) )
+        {
+            #if defined OnBarrierLeave
+                OnBarrierLeave(playerid, barrierid);
+            #endif
+        }
+    }
+
+
+    #if !defined _inc_y_hooks && !defined _INC_y_hooks && defined OnLeaveDynamicArea_easy_barrier
+		return OnLeaveDynamicArea_easy_barrier(playerid, areaid);
+	#else
+		return 1;
+	#endif
+}
+
+#if !defined _inc_y_hooks && !defined _INC_y_hooks
+	#if defined _ALS_OnPlayerLeaveDynamicArea
+		#undef OnPlayerLeaveDynamicArea
+	#else
+		#define _ALS_OnPlayerLeaveDynamicArea
+	#endif
+	#define OnPlayerLeaveDynamicArea OnLeaveDynamicArea_easy_barrier
+
+	#if defined OnLeaveDynamicArea_easy_barrier
+		forward OnLeaveDynamicArea_easy_barrier(playerid, areaid);
+	#endif
+#endif
