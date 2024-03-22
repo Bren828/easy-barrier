@@ -22,11 +22,19 @@ Include in your code and begin using the library:
 ## Example
 
 ```pawn
-new barrierid = BarrierCreate("Police_Department", 10.0, 0.05, 8,  968, 15.0, -10.0, 3.0,  0.0, -90.0, 0.0,  0, 0); // create a barrier
-SetBarrierState(barrierid, BARRIER_STATE_PLAYER_ONLY); // change status only for players
+barrierid = BarrierCreate("Police_Department", 3.0, 0.5, 0, 
+	19302, 
+	24.637180, -8.755125, 3.397187, 0.000000, 0.000000, 86.175994, 0, 0);
+SetBarrierTypeOpening(barrierid, BARRIER_MOVEMENT_TYPE_RIGHT);
 
-barrierid = BarrierCreate("Police_Department", 3.0, 0.5, 0,  19302, 24.637180, -8.755125, 3.397187, 0.000000, 0.000000, 86.175994); // create a door
-SetBarrierTypeOpening(barrierid, BARRIER_MOVEMENT_TYPE_RIGHT, 80.0); // optional
+
+// plus attach
+new barrierid2 = BarrierCreate("Police_Department", 3.0, 0.5, 0,  
+	19302, 
+	24.637180, -6.755125, 3.397187, 0.000000, 0.000000, 86.175994, 0, 0);
+SetBarrierTypeOpening(barrierid2, BARRIER_MOVEMENT_TYPE_LEFT);
+AttachBarrierToBarrier(barrierid, barrierid2);
+
 
 BarrierResponse:Police_Department(playerid, barrierid)
 {
@@ -54,14 +62,40 @@ public OnBarrierObjectCreated(barrierid, objectid, modelid)
     }
     return 1;
 }
+
+forward OnBarrierEnter(playerid, barrierid, keys);
+public OnBarrierEnter(playerid, barrierid, keys)
+{
+    new string[27+32+10],
+        function[32];
+    GetBarrierFunctionName(barrierid, function);
+
+    format(string, sizeof(string), "Barrier Enter: %d | %d | %s", barrierid, keys, function);
+    SendClientMessage(playerid, -1, string);
+    return 1;
+}
+
+
+forward OnBarrierLeave(playerid, barrierid);
+public OnBarrierLeave(playerid, barrierid)
+{
+    new string[22+32+10],
+        function[32];
+
+    GetBarrierFunctionName(barrierid, function);
+
+    format(string, sizeof(string), "Barrier Leave: %d | %s", barrierid, function);
+    SendClientMessage(playerid, -1, string);
+    return 1;
+}
 ```
 
 ## Functions
 
-#### BarrierCreate(const function[], Float:zone_size, Float:move_speed, closing_seconds, modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_PLAYER_AND_DRIVER, const text3d[] = "", color = -1, Float:text3d_distance = 3.0, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0)
+#### BarrierCreate(const function[], Float:radius, Float:move_speed, closing_seconds, modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_PLAYER_AND_DRIVER, const text3d[] = "", color = -1, Float:text3d_distance = 3.0, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0, key = 0)
 > Create a barrier
 > * `function[]` - Function name
-> * `Float:zone_size` - Trigger distance
+> * `Float:radius` - Trigger distance
 > * `Float:move_speed` - The speed at which to move the object (units per second)
 > * `closing_seconds` - Closing time (use the value 0, for manual opening/closing)
 > * `modelid` - The model
@@ -80,6 +114,7 @@ public OnBarrierObjectCreated(barrierid, objectid, modelid)
 > * `Float:trigger_x` - The x coordinate to trigger zone
 > * `Float:trigger_y` - The y coordinate to trigger zone
 > * `Float:trigger_z` - The z coordinate to trigger zone
+> * `key` - Interaction button
 > * Returns (-1) on failure or (barrier id)
 
 #### BarrierDelete(barrierid)
@@ -161,9 +196,119 @@ public OnBarrierObjectCreated(barrierid, objectid, modelid)
 > * `barrierid` - The ID of the barrier
 > * `attachid` - The ID of the barrier to attach
 
-#### UnAttachBarrierFromBarrier(barrierid)
+#### UnAttachBarrierFromBarrier(barrierid, attachid)
 > UnAttach the barrier from the barrier
 > * `barrierid` - The ID of the barrier
+> * `attachid` - The ID of the barrier to attach
+
+#### SetBarrierClosingTime(barrierid, seconds)
+> Set barrier closing time
+> * `barrierid` - The ID of the barrier
+> * `seconds[]` - Closing time (use the value 0, for manual opening/closing)
+> * Returns (-1) on failure or (1) on success
+
+#### GetBarrierClosingTime(barrierid)
+> Get barrier closing time
+> * `barrierid` - The ID of the barrier
+> * Returns (-1) on failure or (second)
+
+#### SetBarrierMoveSpeed(barrierid, Float:speed)
+> Set the speed of a moving object
+> * `barrierid` - The ID of the barrier
+> * `Float:speed` - The speed at which to move the object (units per second)
+> * Returns (-1) on failure or (1) on success
+
+#### Float:GetBarrierMoveSpeed(barrierid)
+> Get the speed of a moving object
+> * `barrierid` - The ID of the barrier
+> * Returns (-1) on failure or (speed)
+
+#### SetBarrierTrigger(barrierid, Float:x, Float:y, Float:z)
+> Set trigger zone
+> * `barrierid` - The ID of the barrier
+> * `Float:x` - The x coordinate to trigger zone
+> * `Float:y` - The y coordinate to trigger zone
+> * `Float:z` - The z coordinate to trigger zone
+> * Returns (-1) on failure or (1) on success
+
+#### GetBarrierTrigger(barrierid, &Float:x, &Float:y, &Float:z)
+> Get trigger zone
+> * `barrierid` - The ID of the barrier
+> * `&Float:x` - The x coordinate to trigger zone
+> * `&Float:y` - The y coordinate to trigger zone
+> * `&Float:z` - The z coordinate to trigger zone
+> * Returns (-1) on failure or (1) on success
+
+#### SetBarrierTriggerExtra(barrierid, Float:x, Float:y, Float:z, Float:radius, barrier_state = BARRIER_STATE_PLAYER_ONLY, key = BARRIER_KEY_STATE_ONFOOT)
+> Set trigger extra 
+> * `barrierid` - The ID of the barrier
+> * `Float:x` - The x coordinate to trigger zone
+> * `Float:y` - The y coordinate to trigger zone
+> * `Float:z` - The z coordinate to trigger zone
+> * `Float:radius` - Trigger distance
+> * `barrier_state` - Barrier status
+> * `key` - Interaction button
+> * Returns (-1) on failure or (1) on success
+
+#### GetBarrierTriggerExtra(barrierid, &Float:x, &Float:y, &Float:z, &Float:radius = 0.0, &barrier_state = 0, &key = 0)
+> Get trigger extra 
+> * `barrierid` - The ID of the barrier
+> * `Float:x` - The x coordinate to trigger zone
+> * `Float:y` - The y coordinate to trigger zone
+> * `Float:z` - The z coordinate to trigger zone
+> * `Float:radius` - Trigger distance
+> * `barrier_state` - Barrier status
+> * `key` - Interaction button
+> * Returns (-1) on failure or (1) on success
+
+#### GetBarrierSlotID(const function[])
+> Get barrier ID
+> * `function[]` - Function name
+> * Returns (-1) on failure or barrier id
+> * NOTE: При использовании одинаковых названий 'function[]' вернет ближайший ID барьера!
+
+#### SetBarrierState(barrierid, barrier_state)
+> Set the barrier status
+> * `barrierid` - The ID of the barrier
+> * `barrier_state` - Barrier status
+> * Returns (-1) on failure or (1) on success
+
+#### GetBarrierState(barrierid)
+> Get Barrier status
+> * `barrierid` - The ID of the barrier
+> * Returns (-1) on failure or (status)
+
+#### SetBarrierKey(barrierid, key)
+> Set barrier key
+> * `barrierid` - The ID of the barrier
+> * `key` - Interaction button
+> * Returns (-1) on failure or (1) on success
+
+#### GetBarrierKey(barrierid)
+> Get barrier key
+> * `barrierid` - The ID of the barrier
+> * Returns (-1) on failure or (key)
+
+#### GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
+> Get the barrier object ID
+> * `barrierid` - The ID of the barrier
+> * `&moveid` - moving object id
+> * `&extraid` - additional object id
+> * Returns (-1) on failure or (1) on success
+
+#### BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
+> Create a second extra object
+> * `barrierid` - The ID of the barrier
+> * `object_model` - The model
+> * `Float:x` - The x coordinate to create the object
+> * `Float:y` - The y coordinate to create the object
+> * `Float:z` - The z coordinate to create the object
+> * `Float:rx` - The x rotation of the object
+> * `Float:ry` - The y rotation of the object
+> * `Float:rz` - The z rotation of the object
+> * `worldid` - The virtual world ID
+> * `interiorid` - The interior ID
+> * Returns (-1) on failure or (1) on success
 
 #### SetBarrierText(barrierid, const text[], color = 0)
 > Set 3D Text
@@ -198,86 +343,23 @@ public OnBarrierObjectCreated(barrierid, objectid, modelid)
 > * `Float:z` - The z coordinate
 > * Returns (-1) on failure or (1) on success
 
-#### SetBarrierSecondsClose(barrierid, seconds)
-> Set barrier closing time
-> * `barrierid` - The ID of the barrier
-> * `seconds[]` - Closing time (use the value 0, for manual opening/closing)
-> * Returns (-1) on failure or (1) on success
 
-#### GetBarrierSecondsCloses(barrierid)
-> Get barrier closing time
-> * `barrierid` - The ID of the barrier
-> * Returns (-1) on failure or (second)
-
-#### SetBarrierMoveSpeed(barrierid, Float:speed)
-> Set the speed of a moving object
-> * `barrierid` - The ID of the barrier
-> * `Float:speed` - The speed at which to move the object (units per second)
-> * Returns (-1) on failure or (1) on success
-
-#### GetBarrierMoveSpeed(barrierid, &Float:speed)
-> Get the speed of a moving object
-> * `barrierid` - The ID of the barrier
-> * `&Float:speed` - The speed at which to move the object (units per second)
-> * Returns (-1) on failure or (1) on success
-
-#### SetBarrierTrigger(barrierid, Float:x, Float:y, Float:z)
-> Set trigger zone
-> * `barrierid` - The ID of the barrier
-> * `Float:x` - The x coordinate to trigger zone
-> * `Float:y` - The y coordinate to trigger zone
-> * `Float:z` - The z coordinate to trigger zone
-> * Returns (-1) on failure or (1) on success
-
-#### GetBarrierTrigger(barrierid, &Float:x, &Float:y, &Float:z)
-> Get trigger zone
-> * `barrierid` - The ID of the barrier
-> * `&Float:x` - The x coordinate to trigger zone
-> * `&Float:y` - The y coordinate to trigger zone
-> * `&Float:z` - The z coordinate to trigger zone
-> * Returns (-1) on failure or (1) on success
-
-#### GetBarrierSlotID(const function[])
-> Get barrier ID
-> * `function[]` - Function name
-> * Returns (-1) on failure or barrier id
-> * NOTE: При использовании одинаковых названий 'function[]' вернет ближайший ID барьера!
-
-#### SetBarrierState(barrierid, barrier_state)
-> Set the barrier status
-> * `barrierid` - The ID of the barrier
-> * `barrier_state` - Barrier status
-> * Returns (-1) on failure or (1) on success
-
-#### GetBarrierState(barrierid)
-> Get Barrier status
-> * `barrierid` - The ID of the barrier
-> * Returns (-1) on failure or (status)
-
-#### GetBarrierObjectID(barrierid, &moveid, &extraid = 0)
-> Get the barrier object ID
-> * `barrierid` - The ID of the barrier
-> * `&moveid` - moving object id
-> * `&extraid` - additional object id
-> * Returns (-1) on failure or (1) on success
-
-#### BarrierCreateExtraObject(barrierid, object_model, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1)
-> Create a second extra object
-> * `barrierid` - The ID of the barrier
-> * `object_model` - The model
-> * `Float:x` - The x coordinate to create the object
-> * `Float:y` - The y coordinate to create the object
-> * `Float:z` - The z coordinate to create the object
-> * `Float:rx` - The x rotation of the object
-> * `Float:ry` - The y rotation of the object
-> * `Float:rz` - The z rotation of the object
-> * `worldid` - The virtual world ID
-> * `interiorid` - The interior ID
-> * Returns (-1) on failure or (1) on success
 
 #### DeleteBarrierExtraObject(barrierid)
 > Delete an extra barrier object
 > * `barrierid` - The ID of the barrier
+> * Returns (-1) on failure or (1) on success
+
+#### GetBarrierCompare(barrierid, function[])
+> 
+> * `barrierid` - The ID of the barrier
+> * `function[]` -
+
+#### GetBarrierFunctionName(barrierid, function[], size_function = sizeof(function))
+> Get barrier function name
+> * `barrierid` - The ID of the barrier
+> * `function[]` - Function name
+> * Returns (-1) on failure or (function)
 
 ## Callback
 
@@ -293,6 +375,19 @@ public OnBarrierObjectCreated(barrierid, objectid, modelid)
 > * `barrierid` - The ID of the barrier
 > * `objectid` - Object ID
 > * `modelid` - Object model
+
+#### public OnBarrierEnter(playerid, barrierid, keys)
+> Called when a trigger zone is entered
+> * `playerid` - The ID of the player
+> * `barrierid` - The ID of the barrier
+> * `keys` - Interaction button
+
+#### OnBarrierLeave(playerid, barrierid)
+> Called when the trigger zone is entered
+> * `playerid` - The ID of the player
+> * `barrierid` - The ID of the barrier
+
+
 
 ## Barrier statuses
 ```pawn
@@ -312,6 +407,8 @@ BARRIER_MOVEMENT_TYPE_DOWN = 5
 ```pawn
 #define MAX_BARRIERS                200
 
+#define BARRIER_MAX_ATTACH          10
+
 #define BARRIER_MAX_FUNCTION_NAME   32
 
 #define BARRIER_KEY_STATE_ONFOOT    KEY_WALK
@@ -320,7 +417,7 @@ BARRIER_MOVEMENT_TYPE_DOWN = 5
 
 #define BARRIER_3DTEXT_LENGTH       144
 
-#define BARRIER_OBJECT_DISTANCE     200.0
+#define BARRIER_OBJECT_DISTANCE     150.0
 
 #define BARRIER_NOT_CREATE_EXTRA_OBJECT // only for the object model 968
 ```
