@@ -22,7 +22,7 @@ Include in your code and begin using the library:
 ## Example
 
 ```pawn
-barrierid = BarrierCreate("Police_Department", 3.0, 0.5, 0, 
+new barrierid = BarrierCreate("Police_Department", 3.0, 0.5, 0, 
 	19302, 
 	24.637180, -8.755125, 3.397187, 0.000000, 0.000000, 86.175994, 0, 0);
 SetBarrierTypeOpening(barrierid, BARRIER_MOVEMENT_TYPE_RIGHT);
@@ -310,6 +310,11 @@ public OnBarrierLeave(playerid, barrierid)
 > * `interiorid` - The interior ID
 > * Returns (-1) on failure or (1) on success
 
+#### DeleteBarrierExtraObject(barrierid)
+> Delete an extra barrier object
+> * `barrierid` - The ID of the barrier
+> * Returns (-1) on failure or (1) on success
+
 #### SetBarrierText(barrierid, const text[], color = 0)
 > Set 3D Text
 > * `barrierid` - The ID of the barrier
@@ -343,15 +348,8 @@ public OnBarrierLeave(playerid, barrierid)
 > * `Float:z` - The z coordinate
 > * Returns (-1) on failure or (1) on success
 
-
-
-#### DeleteBarrierExtraObject(barrierid)
-> Delete an extra barrier object
-> * `barrierid` - The ID of the barrier
-> * Returns (-1) on failure or (1) on success
-
 #### GetBarrierCompare(barrierid, function[])
-> 
+> Compare the function ( function analogue strcmp )
 > * `barrierid` - The ID of the barrier
 > * `function[]` -
 
