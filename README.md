@@ -195,11 +195,13 @@ public OnBarrierLeave(playerid, barrierid)
 > Attach barrier to barrier
 > * `barrierid` - The ID of the barrier
 > * `attachid` - The ID of the barrier to attach
+> * Returns (-1) on failure or (1) on success
 
 #### UnAttachBarrierFromBarrier(barrierid, attachid)
 > UnAttach the barrier from the barrier
 > * `barrierid` - The ID of the barrier
 > * `attachid` - The ID of the barrier to attach
+> * Returns (-1) on failure or (1) on success
 
 #### SetBarrierClosingTime(barrierid, seconds)
 > Set barrier closing time
@@ -351,7 +353,7 @@ public OnBarrierLeave(playerid, barrierid)
 #### GetBarrierCompare(barrierid, function[])
 > Compare the function ( function analogue strcmp )
 > * `barrierid` - The ID of the barrier
-> * `function[]` -
+> * `function[]` - Function name
 
 #### GetBarrierFunctionName(barrierid, function[], size_function = sizeof(function))
 > Get barrier function name
