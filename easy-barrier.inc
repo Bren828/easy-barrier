@@ -5,9 +5,9 @@
 *   ---------------------------------------------------
 *
 *	Creater - @Bren828	
-*									22 March 2024
+*									7 May 2024
 *
-*   Version: 1.4
+*   Version: 1.5
 *
 *   ---------------------------------------------------
 *
@@ -1137,7 +1137,6 @@ stock GetBarrierKey(barrierid)
             player_barrier_enter[playerid] = barrierid;
 
             new keys = (barrier_extra == 0) ? (barrier_gates[barrierid][bg_Key]):(barrier_gates[barrierid][bg_extra_key]);
-
             #if defined OnBarrierEnter
                 OnBarrierEnter(playerid, barrierid, keys);
             #endif
