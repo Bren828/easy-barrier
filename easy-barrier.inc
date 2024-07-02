@@ -1136,8 +1136,8 @@ stock GetBarrierKey(barrierid)
         {
             player_barrier_enter[playerid] = barrierid;
 
-            new keys = (barrier_extra == 0) ? (barrier_gates[barrierid][bg_Key]):(barrier_gates[barrierid][bg_extra_key]);
             #if defined OnBarrierEnter
+                new keys = (barrier_extra == 0) ? (barrier_gates[barrierid][bg_Key]):(barrier_gates[barrierid][bg_extra_key]);
                 OnBarrierEnter(playerid, barrierid, keys);
             #endif
         }
