@@ -5,9 +5,9 @@
 *   ---------------------------------------------------
 *
 *	Creater - @Bren828	
-*									7 May 2024
+*									22 August 2024
 *
-*   Version: 1.5
+*   Version: 1.4.1
 *
 *   ---------------------------------------------------
 *
@@ -67,7 +67,12 @@
 #define BarrierResponse:%0(%1) forward %0(%1); public %0(%1)
 
 
-enum
+#if !defined BARRIER_STREAMER_CUSTOM_TYPE
+    #define BARRIER_STREAMER_CUSTOM_TYPE 0xFF32CDFA32
+#endif
+
+
+enum (<<= 1)
 {
     BARRIER_INVALID = -1,
     BARRIER_STATE_PLAYER_AND_DRIVER = -1,
@@ -81,9 +86,10 @@ enum
     BARRIER_MOVEMENT_TYPE_UP = 4,
     BARRIER_MOVEMENT_TYPE_DOWN = 5,
 
-    BARRIER_DATA_AREA_ID = 0,
-    BARRIER_DATA_ID = 1,
-    BARRIER_DATA_EXTRA = 2,
+    BARRIER_DATA_TYPE = 0,
+    BARRIER_DATA_AREA_ID = 1,
+    BARRIER_DATA_ID = 2,
+    BARRIER_DATA_EXTRA = 3
 }
 
 
@@ -137,7 +143,8 @@ enum BARRIER_GATES_EN
     bg_extra_trigger_state,
     Float:bg_extra_trigger_x,
     Float:bg_extra_trigger_y,
-    Float:bg_extra_trigger_z
+    Float:bg_extra_trigger_z,
+    bool:bg_Disable,
 }
 
 static barrier_gates[MAX_BARRIERS][BARRIER_GATES_EN];
@@ -328,6 +335,7 @@ stock BarrierCreate(const function[], Float:radius, Float:move_speed, closing_se
     barrier_gates[barrierid][bg_extra_trigger_x] = 0.0;
     barrier_gates[barrierid][bg_extra_trigger_y] = 0.0;
     barrier_gates[barrierid][bg_extra_trigger_z] = 0.0;
+    barrier_gates[barrierid][bg_Disable] = false;
 
     barrier_gates[barrierid][bg_MoveObject] = CreateDynamicObject(modelid, x, y, z,  rx, ry, rz,  worldid, interiorid,  -1, BARRIER_OBJECT_DISTANCE, BARRIER_OBJECT_DISTANCE);
 
@@ -354,13 +362,7 @@ stock BarrierCreate(const function[], Float:radius, Float:move_speed, closing_se
 
     barrier_gates[barrierid][bg_Sphere] = CreateDynamicSphere(barrier_gates[barrierid][bg_trigger_x], barrier_gates[barrierid][bg_trigger_y], barrier_gates[barrierid][bg_trigger_z], radius, worldid, interiorid);
     
-    new eb_arr[3];
-    eb_arr[BARRIER_DATA_AREA_ID] = barrier_gates[barrierid][bg_Sphere];
-    eb_arr[BARRIER_DATA_ID] = barrierid;
-    eb_arr[BARRIER_DATA_EXTRA] = 0;
-
-    Streamer_SetArrayData(STREAMER_TYPE_AREA, barrier_gates[barrierid][bg_Sphere], E_STREAMER_EXTRA_ID, eb_arr);
-
+    SetBarrierSphereData(barrier_gates[barrierid][bg_Sphere], barrierid, 0);
 
 	if(strlen(text3d) >= 1) 
     {
@@ -368,6 +370,20 @@ stock BarrierCreate(const function[], Float:radius, Float:move_speed, closing_se
         barrier_gates[barrierid][bg_Text3D] = CreateDynamic3DTextLabel(text3d, color, barrier_gates[barrierid][bg_trigger_x], barrier_gates[barrierid][bg_trigger_y], barrier_gates[barrierid][bg_trigger_z]+0.3, text3d_distance, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, worldid, interiorid, -1, text3d_distance);
     }
     return barrierid;
+}
+
+
+static stock SetBarrierSphereData(sphereid, barrierid, extra)
+{
+    new bg_arr[4];
+
+    bg_arr[BARRIER_DATA_TYPE] = BARRIER_STREAMER_CUSTOM_TYPE;
+    bg_arr[BARRIER_DATA_AREA_ID] = sphereid;
+    bg_arr[BARRIER_DATA_ID] = barrierid;
+    bg_arr[BARRIER_DATA_EXTRA] = extra;
+
+    Streamer_SetArrayData(STREAMER_TYPE_AREA, sphereid, E_STREAMER_EXTRA_ID, bg_arr);
+    return 1;
 }
 
 
@@ -411,6 +427,9 @@ public BarrierClose(barrierid)
 {
     if( !(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create] || barrier_gates[barrierid][bg_Open] == false) 
         return -1;
+
+    if(barrier_gates[barrierid][bg_Disable] == true) 
+        return 1;    
 
     MoveDynamicObject(barrier_gates[barrierid][bg_MoveObject],
         barrier_gates[barrierid][bg_Object_x], barrier_gates[barrierid][bg_Object_y], barrier_gates[barrierid][bg_Object_z], 
@@ -730,12 +749,7 @@ stock SetBarrierTriggerExtra(barrierid, Float:x, Float:y, Float:z, Float:radius,
 
     barrier_gates[barrierid][bg_extra_sphere] = CreateDynamicSphere(x, y, z, radius, barrier_gates[barrierid][bg_Worldid], barrier_gates[barrierid][bg_Interiorid]);
 
-    new eb_arr[3];
-    eb_arr[BARRIER_DATA_AREA_ID] = barrier_gates[barrierid][bg_extra_sphere];
-    eb_arr[BARRIER_DATA_ID] = barrierid;
-    eb_arr[BARRIER_DATA_EXTRA] = 1;
-
-    Streamer_SetArrayData(STREAMER_TYPE_AREA, barrier_gates[barrierid][bg_extra_sphere], E_STREAMER_EXTRA_ID, eb_arr);
+    SetBarrierSphereData(barrier_gates[barrierid][bg_extra_sphere], barrierid, 1);
 
     barrier_gates[barrierid][bg_extra_key] = key; 
     barrier_gates[barrierid][bg_extra_trigger_radius] = radius;
@@ -833,13 +847,7 @@ stock BarrierDelete(barrierid)
                 barrier_gates[attachid][bg_Worldid], 
                 barrier_gates[attachid][bg_Interiorid]);
             
-            
-            new eb_arr[3];
-            eb_arr[BARRIER_DATA_AREA_ID] = barrier_gates[attachid][bg_Sphere];
-            eb_arr[BARRIER_DATA_ID] = attachid;
-            eb_arr[BARRIER_DATA_EXTRA] = 0;
-
-            Streamer_SetArrayData(STREAMER_TYPE_AREA, barrier_gates[attachid][bg_Sphere], E_STREAMER_EXTRA_ID, eb_arr);
+            SetBarrierSphereData(barrier_gates[attachid][bg_Sphere], attachid, 0);
         }
     }
 
@@ -987,14 +995,7 @@ stock UnAttachBarrierFromBarrier(barrierid, attachid)
             barrier_gates[attachid][bg_Worldid], 
             barrier_gates[attachid][bg_Interiorid]);
         
-        
-        new eb_arr[3];
-        eb_arr[BARRIER_DATA_AREA_ID] = barrier_gates[attachid][bg_Sphere];
-        eb_arr[BARRIER_DATA_ID] = attachid;
-        eb_arr[BARRIER_DATA_EXTRA] = 0;
-
-        Streamer_SetArrayData(STREAMER_TYPE_AREA, barrier_gates[attachid][bg_Sphere], E_STREAMER_EXTRA_ID, eb_arr);
-
+        SetBarrierSphereData(barrier_gates[attachid][bg_Sphere], attachid, 0);
         return 1;
     }
 
@@ -1002,7 +1003,7 @@ stock UnAttachBarrierFromBarrier(barrierid, attachid)
 }
 
 
-stock GetBarrierCompare(barrierid, function[])
+stock GetBarrierCompare(barrierid, const function[])
 {
 	if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
         return -1;
@@ -1011,7 +1012,7 @@ stock GetBarrierCompare(barrierid, function[])
 }
 
 
-stock GetBarrierFunctionName(barrierid, function[], size_function = sizeof(function))
+stock GetBarrierFunctionName(barrierid, const function[], size_function = sizeof(function))
 {
 	if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
         return -1;
@@ -1038,6 +1039,24 @@ stock GetBarrierKey(barrierid)
         return -1;
 
     return barrier_gates[barrierid][bg_Key];
+}
+
+
+stock DisableBarrier(barrierid, bool:disable)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
+        return -1;
+
+    barrier_gates[barrierid][bg_Disable] = disable; 
+    return 1;
+}
+
+stock IsBarrierDisabled(barrierid)
+{
+    if(!(0 <= barrierid < MAX_BARRIERS) || !barrier_gates[barrierid][bg_Create]) 
+        return -1;
+
+    return barrier_gates[barrierid][bg_Disable]; 
 }
 
 
@@ -1074,6 +1093,9 @@ stock GetBarrierKey(barrierid)
 
                 // BarrierResponse
                 if(CallLocalFunction(barrier_gates[barrierid][bg_Function], "dd", playerid, barrierid) == 1) 
+                    return 1;
+
+                if(barrier_gates[barrierid][bg_Disable] == true) 
                     return 1;
                 
                 if(barrier_gates[barrierid][bg_ClosingTimeStatic] == 0)
@@ -1123,10 +1145,10 @@ stock GetBarrierKey(barrierid)
 	public OnPlayerEnterDynamicArea(playerid, areaid)
 #endif
 {
-    new eb_arr[3];
+    new eb_arr[4];
     Streamer_GetArrayData(STREAMER_TYPE_AREA, areaid, E_STREAMER_EXTRA_ID, eb_arr);
 
-    if(areaid == eb_arr[BARRIER_DATA_AREA_ID])
+    if(eb_arr[BARRIER_DATA_TYPE] == BARRIER_STREAMER_CUSTOM_TYPE && areaid == eb_arr[BARRIER_DATA_AREA_ID])
     {
         new barrierid = eb_arr[BARRIER_DATA_ID],
             barrier_extra = eb_arr[BARRIER_DATA_EXTRA];
@@ -1136,8 +1158,9 @@ stock GetBarrierKey(barrierid)
         {
             player_barrier_enter[playerid] = barrierid;
 
+            new keys = (barrier_extra == 0) ? (barrier_gates[barrierid][bg_Key]):(barrier_gates[barrierid][bg_extra_key]);
+
             #if defined OnBarrierEnter
-                new keys = (barrier_extra == 0) ? (barrier_gates[barrierid][bg_Key]):(barrier_gates[barrierid][bg_extra_key]);
                 OnBarrierEnter(playerid, barrierid, keys);
             #endif
         }
@@ -1172,10 +1195,10 @@ stock GetBarrierKey(barrierid)
 	public OnPlayerLeaveDynamicArea(playerid, areaid)
 #endif
 {
-    new eb_arr[3];
+    new eb_arr[4];
     Streamer_GetArrayData(STREAMER_TYPE_AREA, areaid, E_STREAMER_EXTRA_ID, eb_arr);
 
-    if(areaid == eb_arr[BARRIER_DATA_AREA_ID])
+    if(eb_arr[BARRIER_DATA_TYPE] == BARRIER_STREAMER_CUSTOM_TYPE && areaid == eb_arr[BARRIER_DATA_AREA_ID])
     {
         new barrierid = eb_arr[BARRIER_DATA_ID],
             barrier_extra = eb_arr[BARRIER_DATA_EXTRA];
