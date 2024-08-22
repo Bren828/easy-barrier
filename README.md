@@ -361,6 +361,16 @@ public OnBarrierLeave(playerid, barrierid)
 > * `function[]` - Function name
 > * Returns (-1) on failure or (function)
 
+#### DisableBarrier(barrierid, bool:disable)
+> Disable barrier
+> * `barrierid` - The ID of the barrier
+> * ` bool:disable` - state
+
+#### IsBarrierDisabled(barrierid)
+> Is the barrier disabled
+> * `barrierid` - The ID of the barrier
+> * Returns (-1) on failure or (state)
+
 ## Callback
 
 #### BarrierResponse:const function[](playerid, barrierid)
