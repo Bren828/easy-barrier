@@ -91,6 +91,8 @@ public OnBarrierLeave(playerid, barrierid)
 ```
 
 ## Functions
+<details>
+<summary>Click to expand the list</summary>
 
 #### BarrierCreate(const function[], Float:radius, Float:move_speed, closing_seconds, modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, barrier_state = BARRIER_STATE_PLAYER_AND_DRIVER, const text3d[] = "", color = -1, Float:text3d_distance = 3.0, Float:trigger_x = 0.0, Float:trigger_y = 0.0, Float:trigger_z = 0.0, key = 0)
 > Create a barrier
@@ -370,8 +372,11 @@ public OnBarrierLeave(playerid, barrierid)
 > Is the barrier disabled
 > * `barrierid` - The ID of the barrier
 > * Returns (-1) on failure or (state)
+</details>
 
 ## Callback
+<details>
+<summary>Click to expand the list</summary>
 
 #### BarrierResponse:const function[](playerid, barrierid)
 > Called when interacting with a barrier
@@ -396,10 +401,13 @@ public OnBarrierLeave(playerid, barrierid)
 > Called when the trigger zone is entered
 > * `playerid` - The ID of the player
 > * `barrierid` - The ID of the barrier
-
+</details>
 
 
 ## Barrier statuses
+<details>
+<summary>Click to expand the list</summary>
+	
 ```pawn
 BARRIER_STATE_PLAYER_AND_DRIVER = -1
 BARRIER_STATE_DRIVER_ONLY = 2
@@ -412,8 +420,12 @@ BARRIER_MOVEMENT_TYPE_LEFT = 3
 BARRIER_MOVEMENT_TYPE_UP = 4
 BARRIER_MOVEMENT_TYPE_DOWN = 5
 ```
+</details>
 
 ## Definition
+<details>
+<summary>Click to expand the list</summary>
+	
 ```pawn
 #define MAX_BARRIERS                200
 
@@ -431,3 +443,4 @@ BARRIER_MOVEMENT_TYPE_DOWN = 5
 
 #define BARRIER_NOT_CREATE_EXTRA_OBJECT // only for the object model 968
 ```
+</details>
