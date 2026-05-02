@@ -382,9 +382,9 @@ public OnBarrierLeave(playerid, barrierid) {
 <details>
 <summary>Click to expand the list</summary>
 
-#### BarrierResponse:const function[](playerid, barrierid)
+#### BarrierResponse:function[](playerid, barrierid)
 > Called when interacting with a barrier
-> * `const function[]` - Function name
+> * `function[]` - Function name
 > * `playerid` - The ID of the player
 > * `barrierid` - The ID of the barrier
 > * NOTE: Always use 'return 0;' if you need to activate the barrier
