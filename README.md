@@ -247,8 +247,8 @@ public OnBarrierLeave(playerid, barrierid) {
 > * `&Float:z` - The z coordinate to trigger zone
 > * Returns (-1) on failure or (1) on success
 
-#### SetBarrierTriggerExtra(barrierid, Float:x, Float:y, Float:z, Float:radius, barrierState = EB_STATE_PLAYER_ONLY, key = EB_KEY_STATE_ONFOOT)
-> Set an additional trigger zone
+#### SetBarrierTriggerExtra(barrierid, Float:x, Float:y, Float:z, Float:radius, barrier_state = EB_STATE_PLAYER_ONLY, key = EB_KEY_STATE_ONFOOT)
+> Set trigger extra 
 > * `barrierid` - The ID of the barrier
 > * `Float:x` - The x coordinate to trigger zone
 > * `Float:y` - The y coordinate to trigger zone
