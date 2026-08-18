@@ -62,7 +62,7 @@
     public %0(%1)
 
 
-#define EB_STREAMER_CUSTOM_TYPE 0xFF32CDFA32
+#define EB_STREAMER_CUSTOM_TYPE 0xFF01CDFA
 
 enum (<<= 1) {
 
