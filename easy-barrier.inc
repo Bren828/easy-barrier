@@ -4,10 +4,10 @@
 *
 *   ---------------------------------------------------
 *
-*	Creater - @Bren828	
-*									02 May 2026
+*	Created by Bren828	
+*									19 August 2026
 *
-*   Version: 1.5
+*   Version: 1.6
 *
 *   ---------------------------------------------------
 *
@@ -64,7 +64,7 @@
 
 #define EB_STREAMER_CUSTOM_TYPE 0xFF01CDFA
 
-enum (<<= 1) {
+enum {
 
     EB_INVALID_ID = -1,
     EB_STATE_PLAYER_AND_DRIVER = -1,
@@ -434,7 +434,7 @@ stock IsValidBarrier(barrierid) {
 }
 
 
-stock BarrierOpen(barrierid) {
+stock BarrierOpen(barrierid, closingTime = 0) {
 
     if(!IsValidBarrier(barrierid)) {
         return EB_INVALID_ID;
@@ -455,6 +455,11 @@ stock BarrierOpen(barrierid) {
         barrier[barrierid][eb_MoveRZ]);
 
     barrier[barrierid][eb_Open] = true;
+
+    if(closingTime) {
+        barrier[barrierid][eb_ClosingTime] = closingTime;
+        SetTimerEx("BarrierClose", barrier[barrierid][eb_ClosingTime] * 1000, false, "d", barrierid);
+    }
 
     if(barrier[barrierid][eb_MaxAttach]) {
         new attachid;
@@ -1307,10 +1312,7 @@ stock IsBarrierDisabled(barrierid) {
                     return 1;
                 }
 
-                BarrierOpen(barrierid);
-
-                barrier[barrierid][eb_ClosingTime] = barrier[barrierid][eb_DefaultClosingTime];
-                SetTimerEx("BarrierClose", barrier[barrierid][eb_ClosingTime] * 1000, false, "d", barrierid);
+                BarrierOpen(barrierid, barrier[barrierid][eb_DefaultClosingTime]);
                 return 1;
             }
         }
