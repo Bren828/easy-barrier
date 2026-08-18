@@ -128,9 +128,10 @@ public OnBarrierLeave(playerid, barrierid) {
 > * `barrierid` - The ID of the barrier
 > * Returns (0) if the barrier ID is invalid, (1) if the barrier ID is valid
 
-#### BarrierOpen(barrierid)
+#### BarrierOpen(barrierid, closingTime = 0)
 > Open the barrier
 > * `barrierid` - The ID of the barrier
+> * `closingTime` - Closing time
 > * Returns (-1) on failure or (1) on success
 
 #### BarrierClose(barrierid)
